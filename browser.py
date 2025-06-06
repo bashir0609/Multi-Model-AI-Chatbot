@@ -1,66 +1,75 @@
-# browser.py - Simple model browser with verified models only
+# browser.py - Guide users to find their own working models
 
 import streamlit as st
-import pandas as pd
-import json
-from models import MODEL_OPTIONS, categorize_models, analyze_model_capabilities, get_model_stats, get_cost_info
+from models import MODEL_OPTIONS
 
 def render_model_browser():
-    """Render a simple model browser interface with verified models."""
-    st.header("🔍 Model Browser - Verified Working Models")
-    st.markdown("**Only verified working models** - no more errors!")
+    """Guide users to find working models themselves."""
+    st.header("🔍 Model Browser - Find Working Models")
     
-    # Model statistics
-    stats = get_model_stats()
-    col1, col2, col3 = st.columns(3)
+    # Big warning
+    st.error("⚠️ **Model availability changes frequently!** Follow the guide below to find current working models.")
     
+    # Step-by-step guide
+    st.subheader("📋 Step-by-Step Guide")
+    
+    with st.container():
+        st.markdown("### 🔗 Step 1: Open OpenRouter")
+        st.markdown("Go to **[OpenRouter Models](https://openrouter.ai/models)** in a new tab")
+        
+        st.markdown("### 🔍 Step 2: Filter for Free Models")
+        st.markdown("""
+        1. Look for **"Prompt pricing"** filter on the left
+        2. Set it to **"FREE"** or drag slider to 0
+        3. You'll see only free models
+        """)
+        
+        st.markdown("### 📋 Step 3: Copy Model IDs")
+        st.markdown("""
+        1. Find models that say **":free"** at the end
+        2. Copy the **exact model ID** (e.g., `meta-llama/llama-3.1-8b-instruct:free`)
+        3. Common patterns:
+           - `provider/model-name:free`
+           - `deepseek/deepseek-chat:free`
+           - `meta-llama/llama-3.x-xxxb-instruct:free`
+        """)
+        
+        st.markdown("### ✅ Step 4: Test the Model")
+        st.markdown("""
+        1. Go back to the **Chat** tab
+        2. Add the model ID to the selection
+        3. Use **"Test API Connection"** button
+        4. If it works ✅, you're good to go!
+        5. If it fails ❌, try another model
+        """)
+    
+    # Manual model input
+    st.subheader("🔧 Manual Model Input")
+    
+    col1, col2 = st.columns([3, 1])
     with col1:
-        st.metric("Total Models", stats['total'])
+        manual_model = st.text_input(
+            "Enter a model ID you found on OpenRouter:",
+            placeholder="e.g., meta-llama/llama-3.1-8b-instruct:free",
+            help="Copy the exact model ID from OpenRouter"
+        )
+    
     with col2:
-        st.metric("FREE Models", stats['free'])
-        st.success("No cost!")
-    with col3:
-        st.metric("Ultra-Cheap", stats['cheap'])
-        st.info("Under $0.20/1M")
-    
-    # Quick recommendations
-    st.subheader("⭐ Verified Working Models")
-    
-    recommendations = {
-        "🧠 Best Free Reasoning": ("deepseek/deepseek-r1-distill-llama-70b:free", "70B distilled reasoning model"),
-        "🔬 Google Thinking": ("google/gemini-2.0-flash-thinking-exp:free", "Latest thinking model"),
-        "💰 Ultra-Cheap": ("deepseek/deepseek-r1-distill-llama-8b", "Only ~$0.04/1M tokens"),
-        "🚀 Latest": ("deepseek/deepseek-r1-0528", "Updated reasoning model")
-    }
-    
-    cols = st.columns(2)
-    for i, (rec_name, (model_id, description)) in enumerate(recommendations.items()):
-        with cols[i % 2]:
-            display_name = MODEL_OPTIONS.get(model_id, model_id)
-            cost_info = get_cost_info(model_id, display_name)
-            
-            st.write(f"**{rec_name}**")
-            st.caption(description)
-            
-            # Show cost badge
-            if cost_info['color'] == 'success':
-                st.success(f"🆓 {cost_info['cost']}")
-            elif cost_info['color'] == 'info':
-                st.info(f"💰 {cost_info['cost']}")
-            else:
-                st.warning(f"💳 {cost_info['cost']}")
-            
-            if st.button(f"Select", key=f"rec_quick_{i}", use_container_width=True):
+        if st.button("Add Model", type="primary"):
+            if manual_model:
                 if 'selected_models_browser' not in st.session_state:
                     st.session_state.selected_models_browser = []
-                if model_id not in st.session_state.selected_models_browser:
-                    st.session_state.selected_models_browser.append(model_id)
-                    st.success(f"✅ Added {display_name.split(' (')[0]}")
+                if manual_model not in st.session_state.selected_models_browser:
+                    st.session_state.selected_models_browser.append(manual_model)
+                    st.success(f"✅ Added: {manual_model}")
                 else:
-                    st.info("Already selected!")
+                    st.info("Already added!")
+            else:
+                st.error("Please enter a model ID")
     
-    # All models list
-    st.subheader("📋 All Verified Models")
+    # Current basic models
+    st.subheader("📦 Basic Models (May Need Credits)")
+    st.info("These are conservative choices that should exist, but may require paid credits:")
     
     for model_id, display_name in MODEL_OPTIONS.items():
         col1, col2, col3 = st.columns([4, 1, 1])
@@ -68,13 +77,10 @@ def render_model_browser():
             st.write(f"**{display_name}**")
             st.caption(f"`{model_id}`")
         with col2:
-            cost_info = get_cost_info(model_id, display_name)
-            if cost_info['color'] == 'success':
-                st.success("FREE")
-            elif cost_info['color'] == 'info':
-                st.info("Cheap")
+            if ':free' in model_id:
+                st.success("FREE?")
             else:
-                st.warning("Paid")
+                st.warning("PAID")
         with col3:
             if st.button(f"Add", key=f"add_{hash(model_id)}"):
                 if 'selected_models_browser' not in st.session_state:
@@ -85,34 +91,51 @@ def render_model_browser():
                 else:
                     st.info("Already added!")
     
-    # Selected models summary
+    # Selected models
     if 'selected_models_browser' in st.session_state and st.session_state.selected_models_browser:
-        st.subheader("✅ Selected Models for Comparison")
+        st.subheader("✅ Selected Models")
         
-        cols = st.columns([4, 1])
-        with cols[0]:
-            for model_id in st.session_state.selected_models_browser:
-                display_name = MODEL_OPTIONS.get(model_id, model_id)
-                cost_info = get_cost_info(model_id, display_name)
-                cost_badge = "🆓" if cost_info['type'] == 'free' else "💰" if cost_info['type'] == 'ultra_cheap' else "💳"
-                st.write(f"{cost_badge} **{display_name}**")
+        for model_id in st.session_state.selected_models_browser:
+            st.write(f"🔹 `{model_id}`")
         
-        with cols[1]:
-            if st.button("🗑️ Clear All", key="clear_browser_selection"):
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🚀 Use in Chat", type="primary"):
+                st.session_state.transfer_models = st.session_state.selected_models_browser
+                st.success("✅ Models transferred! Go to Chat tab.")
+        
+        with col2:
+            if st.button("🗑️ Clear All"):
                 st.session_state.selected_models_browser = []
                 st.rerun()
+    
+    # Links
+    st.subheader("🔗 Useful Links")
+    st.markdown("""
+    - [OpenRouter Models](https://openrouter.ai/models) - Find current models
+    - [OpenRouter API Keys](https://openrouter.ai/keys) - Get your API key  
+    - [OpenRouter Docs](https://openrouter.ai/docs) - Documentation
+    """)
+    
+    # Tips
+    with st.expander("💡 Pro Tips", expanded=False):
+        st.markdown("""
+        **Finding Free Models:**
+        - Look for models ending in `:free`
+        - DeepSeek often has free models
+        - Meta Llama sometimes has free versions
+        - Google Gemini may have free experimental models
         
-        if st.button("🚀 Use These Models in Chat", type="primary", use_container_width=True):
-            # Transfer selected models to main chat
-            st.session_state.transfer_models = st.session_state.selected_models_browser
-            st.success("✅ Models transferred! Switch to the Chat tab to start chatting.")
+        **If Free Models Don't Work:**
+        - Buy $5-10 credits on OpenRouter
+        - Use ultra-cheap models (under $0.10/1M tokens)
+        - Many good models cost only a few cents per conversation
+        
+        **Model Naming Patterns:**
+        - `deepseek/deepseek-chat:free`
+        - `meta-llama/llama-3.1-8b-instruct:free`
+        - `google/gemini-2.0-flash-exp:free`
+        - `mistralai/mistral-7b-instruct:free`
+        """)
     
-    # Important note
-    st.info("💡 **Note**: This list contains only verified working models. If you get a 'model not found' error, the model may have been discontinued.")
-    
-    # Export functionality
-    with st.expander("📤 Export Model Information", expanded=False):
-        if st.button("📋 Copy All Models as JSON"):
-            model_json = json.dumps(MODEL_OPTIONS, indent=2)
-            st.code(model_json, language="json")
-            st.success("Model list displayed above - copy as needed!")
+    st.warning("🔄 **Remember**: Model availability changes daily. Always check OpenRouter for the latest free models!")

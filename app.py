@@ -15,7 +15,8 @@ api_key = os.getenv("OPENROUTER_API_KEY")
 
 # ---- MODEL LIST ----
 MODEL_OPTIONS = {
-    # DeepSeek
+    # ==== COMPLETELY FREE MODELS ====
+    # DeepSeek (Free)
     "deepseek/deepseek-r1-0528-qwen3-8b:free": "DeepSeek R1 0528 Qwen3 8B (FREE)",
     "deepseek/deepseek-r1-0528:free": "DeepSeek R1 0528 (FREE)",
     "deepseek/deepseek-prover-v2:free": "DeepSeek Prover V2 (FREE)",
@@ -28,7 +29,8 @@ MODEL_OPTIONS = {
     "deepseek/deepseek-r1-distill-llama-70b:free": "DeepSeek R1 Distill Llama 70B (FREE)",
     "deepseek/deepseek-r1:free": "DeepSeek R1 (FREE)",
     "deepseek/deepseek-v3:free": "DeepSeek V3 (FREE)",
-    # Meta Llama
+    
+    # Meta Llama (Free)
     "meta-llama/llama-3.3-8b-instruct:free": "Llama 3.3 8B Instruct (FREE)",
     "meta-llama/llama-3.3-70b-instruct:free": "Llama 3.3 70B Instruct (FREE)",
     "meta-llama/llama-3.2-1b-instruct:free": "Llama 3.2 1B Instruct (FREE)",
@@ -36,9 +38,10 @@ MODEL_OPTIONS = {
     "meta-llama/llama-3.2-11b-vision-instruct:free": "Llama 3.2 11B Vision Instruct (FREE)",
     "meta-llama/llama-3.1-405b-base:free": "Llama 3.1 405B Base (FREE)",
     "meta-llama/llama-3.1-8b-instruct:free": "Llama 3.1 8B Instruct (FREE)",
-    "meta-llama/llama-4-maverick:free": "Llama 4 Maverick (FREE)",
-    "meta-llama/llama-4-scout:free": "Llama 4 Scout (FREE)",
-    # Qwen
+    "meta-llama/llama-4-maverick:free": "Llama 4 Maverick 400B MoE (FREE)",
+    "meta-llama/llama-4-scout:free": "Llama 4 Scout 109B MoE (FREE)",
+    
+    # Qwen (Free)
     "qwen/qwen3-30b-a3b:free": "Qwen3 30B A3B (FREE)",
     "qwen/qwen3-8b:free": "Qwen3 8B (FREE)",
     "qwen/qwen3-14b:free": "Qwen3 14B (FREE)",
@@ -52,7 +55,8 @@ MODEL_OPTIONS = {
     "qwen/qwen2.5-7b-instruct:free": "Qwen2.5 7B Instruct (FREE)",
     "qwen/qwen2.5-72b-instruct:free": "Qwen2.5 72B Instruct (FREE)",
     "qwen/qwq-32b:free": "QwQ 32B (FREE)",
-    # Google
+    
+    # Google (Free)
     "google/gemma-3n-4b:free": "Gemma 3n 4B (FREE)",
     "google/gemma-3-1b:free": "Gemma 3 1B (FREE)",
     "google/gemma-3-4b:free": "Gemma 3 4B (FREE)",
@@ -60,44 +64,79 @@ MODEL_OPTIONS = {
     "google/gemma-3-27b:free": "Gemma 3 27B (FREE)",
     "google/gemma-2-9b:free": "Gemma 2 9B (FREE)",
     "google/gemini-2.5-pro-experimental:free": "Gemini 2.5 Pro Experimental (FREE)",
+    "google/gemini-2.5-flash:free": "Gemini 2.5 Flash (FREE)",
     "google/gemini-2.0-flash-experimental:free": "Gemini 2.0 Flash Experimental (FREE)",
+    "google/gemini-2.0-flash-thinking-exp:free": "Gemini 2.0 Flash Thinking (FREE)",
     "google/gemma-7b-it:free": "Gemma 7B IT (FREE)",
-    # Mistral
+    
+    # Mistral (Free)
     "mistralai/devstral-small:free": "Devstral Small (FREE)",
     "mistralai/mistral-small-3.1-24b:free": "Mistral Small 3.1 24B (FREE)",
     "mistralai/mistral-small-3:free": "Mistral Small 3 (FREE)",
     "mistralai/mistral-nemo:free": "Mistral Nemo (FREE)",
     "mistralai/mistral-7b-instruct:free": "Mistral 7B Instruct (FREE)",
-    # Microsoft
+    
+    # Microsoft (Free)
     "microsoft/phi-4-reasoning-plus:free": "Phi 4 Reasoning Plus (FREE)",
     "microsoft/phi-4-reasoning:free": "Phi 4 Reasoning (FREE)",
     "microsoft/mai-ds-r1:free": "MAI DS R1 (FREE)",
-    # Nous Research
+    
+    # Nous Research (Free)
     "nousresearch/deephermes-3-mistral-24b-preview:free": "DeepHermes 3 Mistral 24B Preview (FREE)",
     "nousresearch/deephermes-3-llama-3-8b-preview:free": "DeepHermes 3 Llama 3 8B Preview (FREE)",
-    # OpenGVLab
+    
+    # OpenGVLab (Free)
     "opengvlab/internvl3-14b:free": "InternVL3 14B (FREE)",
     "opengvlab/internvl3-2b:free": "InternVL3 2B (FREE)",
-    # THUDM
+    
+    # THUDM (Free)
     "thudm/glm-z1-32b:free": "GLM Z1 32B (FREE)",
     "thudm/glm-4-32b:free": "GLM 4 32B (FREE)",
-    # Specialized AI
+    
+    # Specialized AI (Free)
     "sarvamai/sarvam-m:free": "Sarvam-M (FREE)",
     "shisa-ai/shisa-v2-llama-3.3-70b:free": "Shisa V2 Llama 3.3 70B (FREE)",
     "arliai/qwq-32b-rpr-v1:free": "QwQ 32B RpR v1 (FREE)",
     "agentica-org/deepcoder-14b-preview:free": "Deepcoder 14B Preview (FREE)",
     "moonshotai/kimi-vl-a3b-thinking:free": "Kimi VL A3B Thinking (FREE)",
     "moonshotai/moonlight-16b-a3b-instruct:free": "Moonlight 16B A3B Instruct (FREE)",
-    # NVIDIA
+    
+    # NVIDIA (Free)
     "nvidia/llama-3.3-nemotron-super-49b-v1:free": "Llama 3.3 Nemotron Super 49B v1 (FREE)",
     "nvidia/llama-3.1-nemotron-ultra-253b-v1:free": "Llama 3.1 Nemotron Ultra 253B v1 (FREE)",
-    # Other Specialized
+    
+    # Other Specialized (Free)
     "featherless/qwerky-72b:free": "Qwerky 72B (FREE)",
     "open-r1/olympiccoder-32b:free": "OlympicCoder 32B (FREE)",
     "rekaai/flash-3:free": "Reka Flash 3 (FREE)",
     "cognitivecomputations/dolphin3.0-r1-mistral-24b:free": "Dolphin3.0 R1 Mistral 24B (FREE)",
     "cognitivecomputations/dolphin3.0-mistral-24b:free": "Dolphin3.0 Mistral 24B (FREE)",
     "tngtech/deepseek-r1t-chimera:free": "TNG DeepSeek R1T Chimera (FREE)",
+    
+    # OpenRouter In-House (Free)
+    "openrouter/optimus-alpha:free": "Optimus Alpha - 1M Context Coding (FREE)",
+    
+    # ==== ULTRA-CHEAP MODELS (Under $0.10/1M tokens) ====
+    # Ministral Series (Super Cheap)
+    "mistralai/ministral-3b": "Ministral 3B ($0.04/1M tokens)",
+    "mistralai/ministral-8b": "Ministral 8B ($0.06/1M tokens)",
+    
+    # Small Llama Models (Cheap)
+    "meta-llama/llama-3.2-1b-instruct": "Llama 3.2 1B Instruct ($0.04/1M)",
+    "meta-llama/llama-3.2-3b-instruct": "Llama 3.2 3B Instruct ($0.06/1M)",
+    
+    # Small Qwen Models (Cheap)
+    "qwen/qwen2.5-0.5b-instruct": "Qwen2.5 0.5B Instruct ($0.02/1M)",
+    "qwen/qwen2.5-1.5b-instruct": "Qwen2.5 1.5B Instruct ($0.04/1M)",
+    "qwen/qwen2.5-3b-instruct": "Qwen2.5 3B Instruct ($0.06/1M)",
+    
+    # Small Gemma Models (Cheap)
+    "google/gemma-2-2b-it": "Gemma 2 2B IT ($0.05/1M)",
+    "google/gemma-2-9b-it": "Gemma 2 9B IT ($0.08/1M)",
+    
+    # ==== LARGE FREE LIMITS (Higher quotas) ====
+    # These are models where buying $10 credits gives you 1000 requests/day instead of 50
+    # All the :free models above get this benefit
 }
 
 # ---- API KEY VALIDATION ----
@@ -239,11 +278,16 @@ def categorize_models():
         'Microsoft (Enterprise & Reasoning)': [],
         'Mistral (European AI)': [],
         'NVIDIA (Optimized Performance)': [],
+        'OpenRouter (In-House Models)': [],
         'Specialized (Vision, Code, Multimodal)': [],
+        'Ultra-Cheap (Under $0.10/1M tokens)': [],
     }
     
     for model_id, display_name in MODEL_OPTIONS.items():
-        if model_id.startswith('deepseek/'):
+        # Check if it's ultra-cheap (non-free but very affordable)
+        if ':free' not in model_id and ('$0.' in display_name and any(price in display_name for price in ['$0.02', '$0.04', '$0.05', '$0.06', '$0.08'])):
+            categories['Ultra-Cheap (Under $0.10/1M tokens)'].append((model_id, display_name))
+        elif model_id.startswith('deepseek/'):
             categories['DeepSeek (Reasoning & Performance)'].append((model_id, display_name))
         elif model_id.startswith('meta-llama/'):
             categories['Meta Llama (General Purpose)'].append((model_id, display_name))
@@ -257,6 +301,8 @@ def categorize_models():
             categories['Mistral (European AI)'].append((model_id, display_name))
         elif model_id.startswith('nvidia/'):
             categories['NVIDIA (Optimized Performance)'].append((model_id, display_name))
+        elif model_id.startswith('openrouter/'):
+            categories['OpenRouter (In-House Models)'].append((model_id, display_name))
         else:
             categories['Specialized (Vision, Code, Multimodal)'].append((model_id, display_name))
     
@@ -268,33 +314,42 @@ def analyze_model_capabilities():
         'reasoning': [],
         'vision': [],
         'coding': [],
-        'multilingual': [],
+        'thinking': [],
         'large_scale': [],
-        'experimental': []
+        'experimental': [],
+        'ultra_cheap': []
     }
     
     for model_id, display_name in MODEL_OPTIONS.items():
         name_lower = display_name.lower()
         
         # Reasoning models
-        if any(word in name_lower for word in ['reasoning', 'r1', 'prover', 'thinking', 'qwq']):
+        if any(word in name_lower for word in ['reasoning', 'r1', 'prover', 'qwq']):
             capabilities['reasoning'].append((model_id, display_name))
+        
+        # Thinking models (new category)
+        if any(word in name_lower for word in ['thinking', 'deep think']):
+            capabilities['thinking'].append((model_id, display_name))
         
         # Vision/Multimodal models
         if any(word in name_lower for word in ['vision', 'vl', 'multimodal', 'kimi']):
             capabilities['vision'].append((model_id, display_name))
         
         # Coding specialized
-        if any(word in name_lower for word in ['coder', 'code', 'deepcoder', 'olympiccoder', 'devstral']):
+        if any(word in name_lower for word in ['coder', 'code', 'deepcoder', 'olympiccoder', 'devstral', 'optimus']):
             capabilities['coding'].append((model_id, display_name))
         
         # Large scale (70B+)
-        if any(word in name_lower for word in ['70b', '405b', '235b', '253b']):
+        if any(word in name_lower for word in ['70b', '405b', '235b', '253b', '400b', '109b']):
             capabilities['large_scale'].append((model_id, display_name))
         
         # Experimental/Latest
         if any(word in name_lower for word in ['experimental', 'preview', 'maverick', 'scout']):
             capabilities['experimental'].append((model_id, display_name))
+        
+        # Ultra cheap models
+        if ':free' not in model_id and '$0.0' in display_name:
+            capabilities['ultra_cheap'].append((model_id, display_name))
     
     return capabilities
 
@@ -302,6 +357,7 @@ def get_model_stats():
     """Get statistics about available models."""
     total_models = len(MODEL_OPTIONS)
     free_models = len([m for m in MODEL_OPTIONS.keys() if ':free' in m])
+    cheap_models = len([m for m in MODEL_OPTIONS.values() if '$0.0' in m and 'FREE' not in m])
     
     # Provider distribution
     providers = {}
@@ -312,8 +368,730 @@ def get_model_stats():
     return {
         'total': total_models,
         'free': free_models,
+        'cheap': cheap_models,
         'providers': providers
     }
+
+def get_cost_info(model_id, display_name):
+    """Get cost and limit information for a model."""
+    if ':free' in model_id:
+        return {
+            'type': 'free',
+            'cost': 'FREE',
+            'limits': '20 req/min, 50-1000 req/day',
+            'color': 'success',
+            'description': '100% Free with rate limits'
+        }
+    elif '$0.0' in display_name:
+        cost_match = display_name.split('
+
+def render_model_browser():
+    """Render the complete model browser interface."""
+    st.header("🔍 Model Browser & Explorer")
+    st.markdown("Explore **FREE** models and **ultra-cheap** options with detailed capabilities")
+    
+    # Model statistics
+    stats = get_model_stats()
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Models", stats['total'])
+    with col2:
+        st.metric("FREE Models", stats['free'])
+        st.success("No cost!")
+    with col3:
+        st.metric("Ultra-Cheap", stats['cheap'])
+        st.info("Under $0.10/1M")
+    with col4:
+        st.metric("Providers", len(stats['providers']))
+    
+    # Cost breakdown info
+    with st.expander("💡 Understanding Costs & Limits", expanded=False):
+        st.markdown("""
+        ### Free Models (:free)
+        - **Cost**: Completely FREE
+        - **Rate Limits**: 20 requests/minute
+        - **Daily Limits**: 
+          - 50 requests/day (basic account)  
+          - 1000 requests/day (after buying $10+ credits)
+        
+        ### Ultra-Cheap Models
+        - **Cost**: $0.02 - $0.08 per million tokens
+        - **Comparison**: ~750 words = 1000 tokens = $0.02-0.08
+        - **Example**: A 1000-word article costs $0.02-0.08 to generate
+        
+        ### How to Get Large Free Limits
+        1. **Use FREE models** - Completely free with rate limits
+        2. **Buy $10 credits** - Increases free model limits to 1000 req/day
+        3. **Use ultra-cheap models** - Tiny costs, no rate limits
+        """)
+    
+    # Provider distribution
+    with st.expander("📊 Provider Distribution", expanded=False):
+        provider_df = pd.DataFrame(list(stats['providers'].items()), columns=['Provider', 'Models'])
+        provider_df = provider_df.sort_values('Models', ascending=False)
+        st.dataframe(provider_df, use_container_width=True)
+    
+    # Quick recommendations
+    st.subheader("⭐ Quick Recommendations")
+    
+    recommendations = {
+        "🚀 Fastest Free": ("meta-llama/llama-3.2-1b-instruct:free", "Smallest, fastest responses"),
+        "🧠 Best Reasoning": ("deepseek/deepseek-r1:free", "Advanced reasoning capabilities"),
+        "🏆 Most Capable": ("meta-llama/llama-3.3-70b-instruct:free", "Best overall performance"),
+        "🔬 Latest Google": ("google/gemini-2.5-flash:free", "Cutting-edge multimodal"),
+        "💻 Code Expert": ("openrouter/optimus-alpha:free", "1M context coding specialist"),
+        "👁️ Vision": ("meta-llama/llama-3.2-11b-vision-instruct:free", "Image understanding"),
+        "🦣 Largest Free": ("meta-llama/llama-4-maverick:free", "400B MoE parameters"),
+        "💰 Cheapest Paid": ("mistralai/ministral-3b", "Only $0.04 per million tokens")
+    }
+    
+    cols = st.columns(4)
+    for i, (rec_name, (model_id, description)) in enumerate(recommendations.items()):
+        with cols[i % 4]:
+            display_name = MODEL_OPTIONS.get(model_id, model_id)
+            cost_info = get_cost_info(model_id, display_name)
+            
+            st.write(f"**{rec_name}**")
+            st.caption(description)
+            
+            # Show cost badge
+            if cost_info['color'] == 'success':
+                st.success(f"🆓 {cost_info['cost']}")
+            elif cost_info['color'] == 'info':
+                st.info(f"💰 {cost_info['cost']}")
+            else:
+                st.warning(f"💳 {cost_info['cost']}")
+            
+            if st.button(f"Select", key=f"rec_quick_{i}", use_container_width=True):
+                if 'selected_models_browser' not in st.session_state:
+                    st.session_state.selected_models_browser = []
+                if model_id not in st.session_state.selected_models_browser:
+                    st.session_state.selected_models_browser.append(model_id)
+                    st.success(f"✅ Added {display_name.split(' (')[0]}")
+                else:
+                    st.info("Already selected!")
+    
+    # Search functionality
+    st.subheader("🔍 Search Models")
+    search_term = st.text_input("Search by name or capability", placeholder="e.g., reasoning, vision, free, cheap, llama")
+    
+    if search_term:
+        matching_models = []
+        search_lower = search_term.lower()
+        
+        for model_id, display_name in MODEL_OPTIONS.items():
+            if (search_lower in model_id.lower() or 
+                search_lower in display_name.lower()):
+                matching_models.append((model_id, display_name))
+        
+        st.write(f"Found {len(matching_models)} matching models:")
+        
+        for search_idx, (model_id, display_name) in enumerate(matching_models):
+            col1, col2, col3 = st.columns([4, 1, 1])
+            with col1:
+                st.write(f"**{display_name}**")
+                st.caption(f"`{model_id}`")
+            with col2:
+                cost_info = get_cost_info(model_id, display_name)
+                if cost_info['color'] == 'success':
+                    st.success("FREE")
+                elif cost_info['color'] == 'info':
+                    st.info("Ultra-Cheap")
+                else:
+                    st.warning("Paid")
+            with col3:
+                if st.button(f"Add", key=f"search_{search_idx}_{hash(model_id)}"):
+                    if 'selected_models_browser' not in st.session_state:
+                        st.session_state.selected_models_browser = []
+                    if model_id not in st.session_state.selected_models_browser:
+                        st.session_state.selected_models_browser.append(model_id)
+                        st.success("Added!")
+                    else:
+                        st.info("Already added!")
+    
+    # Categories view
+    st.subheader("🏷️ Browse by Provider")
+    categories = categorize_models()
+    
+    for category_name, models in categories.items():
+        if models:  # Only show categories with models
+            with st.expander(f"{category_name} ({len(models)} models)", expanded=False):
+                for cat_idx, (model_id, display_name) in enumerate(models):
+                    col1, col2, col3 = st.columns([4, 1, 1])
+                    with col1:
+                        st.write(f"**{display_name}**")
+                        st.caption(f"Model ID: `{model_id}`")
+                    with col2:
+                        cost_info = get_cost_info(model_id, display_name)
+                        if cost_info['color'] == 'success':
+                            st.success(cost_info['cost'])
+                        elif cost_info['color'] == 'info':
+                            st.info(cost_info['cost'])
+                        else:
+                            st.warning(cost_info['cost'])
+                    with col3:
+                        category_key = category_name.replace(" ", "_").replace("(", "").replace(")", "")
+                        if st.button(f"Add", key=f"cat_{category_key}_{cat_idx}"):
+                            if 'selected_models_browser' not in st.session_state:
+                                st.session_state.selected_models_browser = []
+                            if model_id not in st.session_state.selected_models_browser:
+                                st.session_state.selected_models_browser.append(model_id)
+                                st.success("Added!")
+                            else:
+                                st.info("Already added!")
+    
+    # Capabilities view
+    st.subheader("🎯 Browse by Capability")
+    capabilities = analyze_model_capabilities()
+    
+    capability_names = {
+        'reasoning': '🧠 Advanced Reasoning',
+        'thinking': '💭 Thinking Models',
+        'vision': '👁️ Vision/Multimodal', 
+        'coding': '💻 Code Specialization',
+        'large_scale': '🦣 Large Scale (70B+)',
+        'experimental': '🧪 Experimental/Latest',
+        'ultra_cheap': '💰 Ultra-Cheap Models'
+    }
+    
+    for cap_key, cap_name in capability_names.items():
+        models = capabilities.get(cap_key, [])
+        if models:
+            with st.expander(f"{cap_name} ({len(models)} models)", expanded=False):
+                for cap_idx, (model_id, display_name) in enumerate(models):
+                    col1, col2, col3 = st.columns([4, 1, 1])
+                    with col1:
+                        st.write(f"**{display_name}**")
+                        st.caption(f"`{model_id}`")
+                    with col2:
+                        cost_info = get_cost_info(model_id, display_name)
+                        if cost_info['color'] == 'success':
+                            st.success("FREE")
+                        elif cost_info['color'] == 'info':
+                            st.info(cost_info['cost'])
+                        else:
+                            st.warning("Paid")
+                    with col3:
+                        if st.button(f"Add", key=f"cap_{cap_key}_{cap_idx}"):
+                            if 'selected_models_browser' not in st.session_state:
+                                st.session_state.selected_models_browser = []
+                            if model_id not in st.session_state.selected_models_browser:
+                                st.session_state.selected_models_browser.append(model_id)
+                                st.success("Added!")
+                            else:
+                                st.info("Already added!")
+    
+    # Selected models summary
+    if 'selected_models_browser' in st.session_state and st.session_state.selected_models_browser:
+        st.subheader("✅ Selected Models for Comparison")
+        
+        cols = st.columns([4, 1])
+        with cols[0]:
+            for model_id in st.session_state.selected_models_browser:
+                display_name = MODEL_OPTIONS.get(model_id, model_id)
+                cost_info = get_cost_info(model_id, display_name)
+                cost_badge = "🆓" if cost_info['type'] == 'free' else "💰" if cost_info['type'] == 'ultra_cheap' else "💳"
+                st.write(f"{cost_badge} **{display_name}**")
+        
+        with cols[1]:
+            if st.button("🗑️ Clear All", key="clear_browser_selection"):
+                st.session_state.selected_models_browser = []
+                st.rerun()
+        
+        if st.button("🚀 Use These Models in Chat", type="primary", use_container_width=True):
+            # Transfer selected models to main chat
+            st.session_state.transfer_models = st.session_state.selected_models_browser
+            st.success("✅ Models transferred! Switch to the Chat tab to start chatting.")
+    
+    # Export functionality
+    with st.expander("📤 Export Model Information", expanded=False):
+        if st.button("📋 Copy All Models as JSON"):
+            model_json = json.dumps(MODEL_OPTIONS, indent=2)
+            st.code(model_json, language="json")
+            st.success("Model list displayed above - copy as needed!")
+        
+        if st.button("📊 Download Model Statistics CSV"):
+            # Create a comprehensive model DataFrame
+            model_data = []
+            for model_id, display_name in MODEL_OPTIONS.items():
+                provider = model_id.split('/')[0] if '/' in model_id else 'other'
+                cost_info = get_cost_info(model_id, display_name)
+                
+                size = 'Unknown'
+                if any(x in display_name.lower() for x in ['0.5b', '1b', '2b', '3b', '7b', '8b']):
+                    size = 'Small (≤8B)'
+                elif any(x in display_name.lower() for x in ['11b', '12b', '14b', '24b', '27b', '30b', '32b']):
+                    size = 'Medium (9B-32B)'
+                elif any(x in display_name.lower() for x in ['70b', '72b']):
+                    size = 'Large (70B+)'
+                elif any(x in display_name.lower() for x in ['109b', '235b', '253b', '400b', '405b']):
+                    size = 'Ultra Large (100B+)'
+                
+                model_data.append({
+                    'Model ID': model_id,
+                    'Display Name': display_name,
+                    'Provider': provider.title(),
+                    'Cost': cost_info['cost'],
+                    'Type': cost_info['type'].title(),
+                    'Size Category': size,
+                    'Limits': cost_info['limits']
+                })
+            
+            df = pd.DataFrame(model_data)
+            csv = df.to_csv(index=False)
+            st.download_button(
+                label="📥 Download CSV",
+                data=csv,
+                file_name="openrouter_models_enhanced.csv",
+                mime="text/csv"
+            )
+
+def chat_interface():
+    """Main chat interface function"""
+    st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
+
+    # Check for transferred models from browser
+    if 'transfer_models' in st.session_state:
+        st.success(f"✅ {len(st.session_state.transfer_models)} models transferred from browser!")
+        # Auto-select the transferred models
+        default_models = st.session_state.transfer_models
+        del st.session_state.transfer_models  # Clean up
+    else:
+        default_models = ["deepseek/deepseek-v3-base:free"]
+
+    # Custom CSS for better styling
+    st.markdown("""
+    <style>
+        .model-header {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status-box {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+        }
+        .error-box {
+            border: 1px solid #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .success-box {
+            border: 1px solid #28a745;
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ---- SIDEBAR ----
+    with st.sidebar:
+        st.header("🔐 API Access")
+        
+        # Check if environment API key exists
+        env_api_key = api_key
+        
+        # API Key source selection
+        api_source = st.radio(
+            "Choose API Key Source:",
+            ["Environment Variable", "Manual Input"],
+            help="Select how you want to provide your OpenRouter API key"
+        )
+        
+        final_api_key = None
+        
+        if api_source == "Environment Variable":
+            if env_api_key:
+                env_api_key = env_api_key.strip()
+                is_valid, message = validate_api_key(env_api_key)
+                
+                if is_valid:
+                    # Show partial key for verification
+                    masked_key = env_api_key[:8] + "..." + env_api_key[-4:] if len(env_api_key) > 12 else "sk-..."
+                    st.success(f"✅ Environment API key loaded: `{masked_key}`")
+                    final_api_key = env_api_key
+                    
+                    # Option to view/edit the key
+                    with st.expander("🔍 View/Edit Environment Key", expanded=False):
+                        edited_key = st.text_input(
+                            "Current environment key:",
+                            value=env_api_key,
+                            type="password",
+                            help="Edit if needed"
+                        )
+                        if edited_key != env_api_key:
+                            is_valid_edited, message_edited = validate_api_key(edited_key)
+                            if is_valid_edited:
+                                st.info("✅ Using edited key")
+                                final_api_key = edited_key
+                            else:
+                                st.error(f"❌ Edited key invalid: {message_edited}")
+                else:
+                    st.error(f"❌ Environment API key issue: {message}")
+                    st.info("💡 Switch to 'Manual Input' or fix your .env file")
+            else:
+                st.warning("⚠️ No OPENROUTER_API_KEY found in environment")
+                st.info("💡 Create a `.env` file with: `OPENROUTER_API_KEY=your-key-here`")
+                st.info("💡 Or switch to 'Manual Input' below")
+        
+        elif api_source == "Manual Input":
+            st.info("🔑 Enter your OpenRouter API key manually")
+            
+            manual_key = st.text_input(
+                "API Key:",
+                type="password",
+                help="Get your key from https://openrouter.ai/keys",
+                placeholder="sk-or-v1-..."
+            )
+            
+            if manual_key:
+                manual_key = manual_key.strip()
+                is_valid, message = validate_api_key(manual_key)
+                if is_valid:
+                    masked_key = manual_key[:8] + "..." + manual_key[-4:] if len(manual_key) > 12 else "sk-..."
+                    st.success(f"✅ Manual API key validated: `{masked_key}`")
+                    final_api_key = manual_key
+                else:
+                    st.error(f"❌ {message}")
+            else:
+                st.warning("⚠️ Please enter your API key above")
+        
+        # Final validation and assignment
+        if final_api_key:
+            current_api_key = final_api_key
+            
+            # Quick reference links
+            with st.expander("🔗 Quick Links", expanded=False):
+                st.markdown("""
+                - [Get API Key](https://openrouter.ai/keys) 🗝️
+                - [View Usage](https://openrouter.ai/usage) 📊  
+                - [Check Credits](https://openrouter.ai/credits) 💳
+                - [Documentation](https://openrouter.ai/docs) 📚
+                """)
+        else:
+            st.error("❌ No valid API key available")
+            st.stop()
+
+        st.divider()
+        st.header("🔧 Connection Test")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🧪 Test API Connection", help="Test if your API key works", use_container_width=True):
+                with st.spinner("Testing connection..."):
+                    # Use a simple test model for the connection test
+                    test_model = "deepseek/deepseek-v3-base:free"
+                    test_response = call_model_api(
+                        test_model,
+                        [{"role": "user", "content": "Hi"}],
+                        current_api_key,
+                        0.1,
+                        10,
+                        30,
+                        ""  # No system message for test
+                    )
+                    if test_response.startswith("🔐") or test_response.startswith("❌"):
+                        st.error(f"❌ Connection failed")
+                        st.error(test_response)
+                    else:
+                        st.success("✅ API connection successful!")
+                        st.info(f"Test response: {test_response[:100]}...")
+        
+        with col2:
+            if st.button("📋 Copy API Setup", help="Copy .env file format", use_container_width=True):
+                if current_api_key:
+                    env_format = f"OPENROUTER_API_KEY={current_api_key}"
+                    st.code(env_format, language="bash")
+                    st.info("📝 Copy this to your .env file")
+
+        st.divider()
+        st.header("🤖 Model Selection")
+        selected_models = st.multiselect(
+            "Choose one or more models to compare:",
+            options=list(MODEL_OPTIONS.keys()),
+            format_func=lambda x: MODEL_OPTIONS[x],
+            default=default_models,
+            help="Select multiple models to compare their responses."
+        )
+
+        # Quick model selection buttons
+        st.subheader("⚡ Quick Select")
+        quick_models = {
+            "🧠 Reasoning": "deepseek/deepseek-r1:free",
+            "🏆 Best Overall": "meta-llama/llama-3.3-70b-instruct:free", 
+            "🚀 Fastest": "meta-llama/llama-3.2-1b-instruct:free",
+            "💻 Coding": "openrouter/optimus-alpha:free",
+            "🔬 Latest": "google/gemini-2.5-flash:free",
+            "💰 Ultra-Cheap": "mistralai/ministral-3b"
+        }
+        
+        cols = st.columns(2)
+        for i, (name, model_id) in enumerate(quick_models.items()):
+            with cols[i % 2]:
+                display_name = MODEL_OPTIONS.get(model_id, model_id)
+                # Show cost info
+                cost_info = get_cost_info(model_id, display_name)
+                cost_badge = "🆓" if cost_info['type'] == 'free' else "💰" if cost_info['type'] == 'ultra_cheap' else "💳"
+                
+                if st.button(f"{cost_badge} {name}", key=f"quick_chat_{i}", use_container_width=True):
+                    if model_id not in selected_models:
+                        selected_models.append(model_id)
+                        st.rerun()
+
+        # Layout options
+        st.subheader("📱 Layout")
+        if len(selected_models) > 2:
+            layout_mode = st.radio(
+                "Choose layout for multiple models:",
+                ["Tabs", "Columns", "Stacked"],
+                help="Tabs are better for 3+ models"
+            )
+        else:
+            layout_mode = "Columns"
+
+        st.divider()
+        st.header("💬 Conversation")
+        system_message = st.text_area(
+            "System Message (Optional):",
+            placeholder="You are a helpful assistant...",
+            help="Set the behavior/personality of the AI models"
+        )
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🗑️ Clear All", help="Clear all conversations"):
+                st.session_state.chat_history = {}
+                st.rerun()
+        
+        with col2:
+            if st.button("📋 Export", help="Copy conversation to clipboard"):
+                if "chat_history" in st.session_state:
+                    # Create export text
+                    export_text = "# AI Chatbot Conversation Export\n\n"
+                    for model in selected_models:
+                        if model in st.session_state.chat_history:
+                            export_text += f"## {MODEL_OPTIONS[model]}\n\n"
+                            for msg in st.session_state.chat_history[model]:
+                                role = "**User**" if msg["role"] == "user" else "**Assistant**"
+                                export_text += f"{role}: {msg['content']}\n\n"
+                            export_text += "---\n\n"
+                    st.text_area("Copy this text:", export_text, height=100)
+
+        st.divider()
+        with st.expander("⚙️ Advanced Settings", expanded=False):
+            temperature = st.slider(
+                "Temperature",
+                0.0, 1.5, 0.7, 0.05,
+                help="Higher = more creative, lower = more focused."
+            )
+            max_tokens = st.slider(
+                "Max tokens",
+                16, 2048, 512, 16,
+                help="Maximum length of the model's response."
+            )
+            timeout = st.slider(
+                "Timeout (seconds)",
+                10, 120, 60, 5,
+                help="Request timeout for API calls."
+            )
+            
+            if st.button("Restore Defaults"):
+                st.session_state.temperature = 0.7
+                st.session_state.max_tokens = 512
+                st.session_state.timeout = 60
+                st.rerun()
+
+        st.markdown("---")
+        st.caption("Made with ❤️ using Streamlit and OpenRouter")
+
+    if not selected_models:
+        st.warning("Please select at least one model to continue.")
+        st.info("💡 Use the Model Browser tab to explore and select models!")
+        st.stop()
+
+    # Final API key check before proceeding
+    if not current_api_key or not current_api_key.strip():
+        st.error("❌ No valid API key available. Please configure your API key in the sidebar.")
+        st.stop()
+
+    # ---- SESSION STATE FOR CHAT ----
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = {}
+
+    if "model_status" not in st.session_state:
+        st.session_state.model_status = {}
+
+    for model in selected_models:
+        if model not in st.session_state.chat_history:
+            st.session_state.chat_history[model] = []
+        if model not in st.session_state.model_status:
+            st.session_state.model_status[model] = "Ready"
+
+    # ---- MAIN CHAT INTERFACE ----
+    user_input = st.chat_input("Type your message and press Enter...")
+
+    if user_input:
+        # Add user message to all selected models
+        for model in selected_models:
+            st.session_state.chat_history[model].append({"role": "user", "content": user_input})
+        
+        # Show progress
+        progress_container = st.container()
+        with progress_container:
+            st.info("🤖 Getting responses from selected models...")
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+        
+        # Update status for all models
+        for model in selected_models:
+            st.session_state.model_status[model] = "Generating..."
+        
+        if len(selected_models) == 1:
+            # Single model - simple call
+            model = selected_models[0]
+            status_text.text(f"Calling {MODEL_OPTIONS[model]}...")
+            response = call_model_api(
+                model,
+                st.session_state.chat_history[model],
+                current_api_key,
+                temperature,
+                max_tokens,
+                timeout,
+                system_message
+            )
+            st.session_state.chat_history[model].append({"role": "assistant", "content": response})
+            st.session_state.model_status[model] = "Complete"
+            progress_bar.progress(1.0)
+        else:
+            # Multiple models - parallel calls
+            status_text.text("Calling multiple models in parallel...")
+            
+            # Get messages for parallel call (excluding the system message part)
+            messages_for_api = st.session_state.chat_history[selected_models[0]]
+            
+            results = call_models_parallel(
+                selected_models, messages_for_api, current_api_key, temperature, max_tokens, timeout, system_message
+            )
+            
+            # Add responses to chat history
+            for i, model in enumerate(selected_models):
+                st.session_state.chat_history[model].append({
+                    "role": "assistant", 
+                    "content": results[model]
+                })
+                st.session_state.model_status[model] = "Complete"
+                progress_bar.progress((i + 1) / len(selected_models))
+        
+        # Clear progress indicators
+        progress_container.empty()
+        st.rerun()
+
+    # ---- DISPLAY CHAT BASED ON LAYOUT ----
+    if layout_mode == "Tabs" and len(selected_models) > 1:
+        # Tab layout for better readability with many models
+        tabs = st.tabs([MODEL_OPTIONS[model] for model in selected_models])
+        
+        for idx, model in enumerate(selected_models):
+            with tabs[idx]:
+                # Model status
+                status = st.session_state.model_status.get(model, "Ready")
+                if status == "Generating...":
+                    st.info("🤖 Generating response...")
+                elif status == "Complete":
+                    st.success("✅ Response ready")
+                
+                # Chat history
+                chat_container = st.container()
+                with chat_container:
+                    for msg in st.session_state.chat_history.get(model, []):
+                        if msg["role"] == "user":
+                            st.chat_message("user").markdown(msg["content"])
+                        else:
+                            st.chat_message("assistant").markdown(msg["content"])
+                
+                # Individual model controls
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_tab_{idx}"):
+                        st.session_state.chat_history[model] = []
+                        st.rerun()
+
+    elif layout_mode == "Stacked":
+        # Stacked layout - one model per row
+        for model in selected_models:
+            st.markdown(f'<div class="model-header">{MODEL_OPTIONS[model]}</div>', unsafe_allow_html=True)
+            
+            # Status indicator
+            status = st.session_state.model_status.get(model, "Ready")
+            if status == "Generating...":
+                st.info("🤖 Generating response...")
+            
+            # Chat messages
+            for msg in st.session_state.chat_history.get(model, []):
+                if msg["role"] == "user":
+                    st.chat_message("user").markdown(msg["content"])
+                else:
+                    st.chat_message("assistant").markdown(msg["content"])
+            
+            st.markdown("---")
+
+    else:
+        # Column layout (default for 1-2 models)
+        cols = st.columns(len(selected_models))
+        
+        for idx, model in enumerate(selected_models):
+            with cols[idx]:
+                st.markdown(f'<div class="model-header">{MODEL_OPTIONS[model]}</div>', unsafe_allow_html=True)
+                
+                # Status indicator
+                status = st.session_state.model_status.get(model, "Ready")
+                if status == "Generating...":
+                    st.info("🤖 Generating...")
+                
+                # Chat history
+                for msg in st.session_state.chat_history.get(model, []):
+                    if msg["role"] == "user":
+                        st.chat_message("user").markdown(msg["content"])
+                    else:
+                        st.chat_message("assistant").markdown(msg["content"])
+                
+                # Individual clear button
+                if st.button(f"Clear", key=f"clear_col_{idx}", help=f"Clear {MODEL_OPTIONS[model]}"):
+                    st.session_state.chat_history[model] = []
+                    st.rerun()
+
+    # ---- FOOTER INFO ----
+    if st.session_state.chat_history:
+        with st.expander("📊 Session Info"):
+            total_messages = sum(len(history) for history in st.session_state.chat_history.values())
+            st.write(f"**Total messages:** {total_messages}")
+            st.write(f"**Active models:** {len(selected_models)}")
+            
+            for model in selected_models:
+                model_messages = len(st.session_state.chat_history.get(model, []))
+                st.write(f"- {MODEL_OPTIONS[model]}: {model_messages} messages")
+
+# ---- MAIN APP ----
+st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide", page_icon="🧠")
+
+# Main navigation
+tab1, tab2 = st.tabs(["💬 Chat", "🔍 Model Browser"])
+
+with tab1:
+    # Main chat interface
+    chat_interface()
+
+with tab2:
+    # Model browser interface
+    render_model_browser())[1].split('/')[0] if '
 
 def render_model_browser():
     """Render the complete model browser interface."""
@@ -362,7 +1140,7 @@ def render_model_browser():
             display_name = MODEL_OPTIONS.get(model_id, model_id)
             st.write(f"**{rec_name}**")
             st.caption(description)
-            if st.button(f"Select", key=f"rec_{i}", use_container_width=True):
+            if st.button(f"Select", key=f"rec_quick_{i}", use_container_width=True):
                 if 'selected_models_browser' not in st.session_state:
                     st.session_state.selected_models_browser = []
                 if model_id not in st.session_state.selected_models_browser:
@@ -386,7 +1164,7 @@ def render_model_browser():
         
         st.write(f"Found {len(matching_models)} matching models:")
         
-        for model_id, display_name in matching_models:
+        for search_idx, (model_id, display_name) in enumerate(matching_models):
             col1, col2, col3 = st.columns([4, 1, 1])
             with col1:
                 st.write(f"**{display_name}**")
@@ -394,7 +1172,7 @@ def render_model_browser():
             with col2:
                 st.success("FREE")
             with col3:
-                if st.button(f"Add", key=f"search_{model_id}"):
+                if st.button(f"Add", key=f"search_{search_idx}_{hash(model_id)}"):
                     if 'selected_models_browser' not in st.session_state:
                         st.session_state.selected_models_browser = []
                     if model_id not in st.session_state.selected_models_browser:
@@ -410,13 +1188,14 @@ def render_model_browser():
     for category_name, models in categories.items():
         if models:  # Only show categories with models
             with st.expander(f"{category_name} ({len(models)} models)", expanded=False):
-                for model_id, display_name in models:
+                for cat_idx, (model_id, display_name) in enumerate(models):
                     col1, col2 = st.columns([5, 1])
                     with col1:
                         st.write(f"**{display_name}**")
                         st.caption(f"Model ID: `{model_id}`")
                     with col2:
-                        if st.button(f"Add", key=f"cat_{model_id}"):
+                        category_key = category_name.replace(" ", "_").replace("(", "").replace(")", "")
+                        if st.button(f"Add", key=f"cat_{category_key}_{cat_idx}"):
                             if 'selected_models_browser' not in st.session_state:
                                 st.session_state.selected_models_browser = []
                             if model_id not in st.session_state.selected_models_browser:
@@ -441,13 +1220,13 @@ def render_model_browser():
         models = capabilities.get(cap_key, [])
         if models:
             with st.expander(f"{cap_name} ({len(models)} models)", expanded=False):
-                for model_id, display_name in models:
+                for cap_idx, (model_id, display_name) in enumerate(models):
                     col1, col2 = st.columns([5, 1])
                     with col1:
                         st.write(f"**{display_name}**")
                         st.caption(f"`{model_id}`")
                     with col2:
-                        if st.button(f"Add", key=f"cap_{model_id}"):
+                        if st.button(f"Add", key=f"cap_{cap_key}_{cap_idx}"):
                             if 'selected_models_browser' not in st.session_state:
                                 st.session_state.selected_models_browser = []
                             if model_id not in st.session_state.selected_models_browser:
@@ -702,7 +1481,7 @@ def chat_interface():
         cols = st.columns(2)
         for i, (name, model_id) in enumerate(quick_models.items()):
             with cols[i % 2]:
-                if st.button(name, key=f"quick_{i}", use_container_width=True):
+                if st.button(name, key=f"quick_chat_{i}", use_container_width=True):
                     if model_id not in selected_models:
                         selected_models.append(model_id)
                         st.rerun()
@@ -881,7 +1660,7 @@ def chat_interface():
                 # Individual model controls
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_{model}"):
+                    if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_tab_{idx}"):
                         st.session_state.chat_history[model] = []
                         st.rerun()
 
@@ -925,7 +1704,7 @@ def chat_interface():
                         st.chat_message("assistant").markdown(msg["content"])
                 
                 # Individual clear button
-                if st.button(f"Clear", key=f"clear_{model}", help=f"Clear {MODEL_OPTIONS[model]}"):
+                if st.button(f"Clear", key=f"clear_col_{idx}", help=f"Clear {MODEL_OPTIONS[model]}"):
                     st.session_state.chat_history[model] = []
                     st.rerun()
 
@@ -952,11 +1731,223 @@ with tab1:
 
 with tab2:
     # Model browser interface
-    render_model_browser()
+    render_model_browser() in display_name else '0.06'
+        return {
+            'type': 'ultra_cheap',
+            'cost': f'${cost_match}/1M',
+            'limits': 'Standard API limits',
+            'color': 'info',
+            'description': 'Ultra-affordable pricing'
+        }
+    else:
+        return {
+            'type': 'paid',
+            'cost': 'Variable pricing',
+            'limits': 'Standard API limits',
+            'color': 'warning',
+            'description': 'Standard pricing'
+        }
 
-def chat_interface():
-    """Main chat interface function"""
-    st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
+def render_model_browser():
+    """Render the complete model browser interface."""
+    st.header("🔍 Model Browser & Explorer")
+    st.markdown("Explore all available FREE models with detailed capabilities")
+    
+    # Model statistics
+    stats = get_model_stats()
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Models", stats['total'])
+    with col2:
+        st.metric("FREE Models", stats['free'])
+        st.success("No cost!")
+    with col3:
+        most_models_provider = max(stats['providers'].items(), key=lambda x: x[1])
+        st.metric("Top Provider", most_models_provider[0].title())
+        st.info(f"{most_models_provider[1]} models")
+    with col4:
+        st.metric("Providers", len(stats['providers']))
+    
+    # Provider distribution
+    with st.expander("📊 Provider Distribution", expanded=False):
+        provider_df = pd.DataFrame(list(stats['providers'].items()), columns=['Provider', 'Models'])
+        provider_df = provider_df.sort_values('Models', ascending=False)
+        st.dataframe(provider_df, use_container_width=True)
+    
+    # Quick recommendations
+    st.subheader("⭐ Quick Recommendations")
+    
+    recommendations = {
+        "🚀 Fastest": ("meta-llama/llama-3.2-1b-instruct:free", "Smallest, fastest responses"),
+        "🧠 Best Reasoning": ("deepseek/deepseek-r1:free", "Advanced reasoning capabilities"),
+        "🏆 Most Capable": ("meta-llama/llama-3.3-70b-instruct:free", "Best overall performance"),
+        "🔬 Latest": ("google/gemini-2.0-flash-experimental:free", "Cutting-edge research"),
+        "💻 Code Expert": ("qwen/qwen2.5-coder-32b-instruct:free", "Specialized for programming"),
+        "👁️ Vision": ("meta-llama/llama-3.2-11b-vision-instruct:free", "Image understanding"),
+        "🦣 Largest": ("meta-llama/llama-3.1-405b-base:free", "Most parameters"),
+        "🌐 Multilingual": ("qwen/qwen2.5-72b-instruct:free", "Multiple languages")
+    }
+    
+    cols = st.columns(4)
+    for i, (rec_name, (model_id, description)) in enumerate(recommendations.items()):
+        with cols[i % 4]:
+            display_name = MODEL_OPTIONS.get(model_id, model_id)
+            st.write(f"**{rec_name}**")
+            st.caption(description)
+            if st.button(f"Select", key=f"rec_quick_{i}", use_container_width=True):
+                if 'selected_models_browser' not in st.session_state:
+                    st.session_state.selected_models_browser = []
+                if model_id not in st.session_state.selected_models_browser:
+                    st.session_state.selected_models_browser.append(model_id)
+                    st.success(f"✅ Added {display_name.split(' (')[0]}")
+                else:
+                    st.info("Already selected!")
+    
+    # Search functionality
+    st.subheader("🔍 Search Models")
+    search_term = st.text_input("Search by name or capability", placeholder="e.g., reasoning, vision, llama, deepseek")
+    
+    if search_term:
+        matching_models = []
+        search_lower = search_term.lower()
+        
+        for model_id, display_name in MODEL_OPTIONS.items():
+            if (search_lower in model_id.lower() or 
+                search_lower in display_name.lower()):
+                matching_models.append((model_id, display_name))
+        
+        st.write(f"Found {len(matching_models)} matching models:")
+        
+        for search_idx, (model_id, display_name) in enumerate(matching_models):
+            col1, col2, col3 = st.columns([4, 1, 1])
+            with col1:
+                st.write(f"**{display_name}**")
+                st.caption(f"`{model_id}`")
+            with col2:
+                st.success("FREE")
+            with col3:
+                if st.button(f"Add", key=f"search_{search_idx}_{hash(model_id)}"):
+                    if 'selected_models_browser' not in st.session_state:
+                        st.session_state.selected_models_browser = []
+                    if model_id not in st.session_state.selected_models_browser:
+                        st.session_state.selected_models_browser.append(model_id)
+                        st.success("Added!")
+                    else:
+                        st.info("Already added!")
+    
+    # Categories view
+    st.subheader("🏷️ Browse by Provider")
+    categories = categorize_models()
+    
+    for category_name, models in categories.items():
+        if models:  # Only show categories with models
+            with st.expander(f"{category_name} ({len(models)} models)", expanded=False):
+                for cat_idx, (model_id, display_name) in enumerate(models):
+                    col1, col2 = st.columns([5, 1])
+                    with col1:
+                        st.write(f"**{display_name}**")
+                        st.caption(f"Model ID: `{model_id}`")
+                    with col2:
+                        category_key = category_name.replace(" ", "_").replace("(", "").replace(")", "")
+                        if st.button(f"Add", key=f"cat_{category_key}_{cat_idx}"):
+                            if 'selected_models_browser' not in st.session_state:
+                                st.session_state.selected_models_browser = []
+                            if model_id not in st.session_state.selected_models_browser:
+                                st.session_state.selected_models_browser.append(model_id)
+                                st.success("Added!")
+                            else:
+                                st.info("Already added!")
+    
+    # Capabilities view
+    st.subheader("🎯 Browse by Capability")
+    capabilities = analyze_model_capabilities()
+    
+    capability_names = {
+        'reasoning': '🧠 Advanced Reasoning',
+        'vision': '👁️ Vision/Multimodal', 
+        'coding': '💻 Code Specialization',
+        'large_scale': '🦣 Large Scale (70B+)',
+        'experimental': '🧪 Experimental/Latest'
+    }
+    
+    for cap_key, cap_name in capability_names.items():
+        models = capabilities.get(cap_key, [])
+        if models:
+            with st.expander(f"{cap_name} ({len(models)} models)", expanded=False):
+                for cap_idx, (model_id, display_name) in enumerate(models):
+                    col1, col2 = st.columns([5, 1])
+                    with col1:
+                        st.write(f"**{display_name}**")
+                        st.caption(f"`{model_id}`")
+                    with col2:
+                        if st.button(f"Add", key=f"cap_{cap_key}_{cap_idx}"):
+                            if 'selected_models_browser' not in st.session_state:
+                                st.session_state.selected_models_browser = []
+                            if model_id not in st.session_state.selected_models_browser:
+                                st.session_state.selected_models_browser.append(model_id)
+                                st.success("Added!")
+                            else:
+                                st.info("Already added!")
+    
+    # Selected models summary
+    if 'selected_models_browser' in st.session_state and st.session_state.selected_models_browser:
+        st.subheader("✅ Selected Models for Comparison")
+        
+        cols = st.columns([4, 1])
+        with cols[0]:
+            for model_id in st.session_state.selected_models_browser:
+                display_name = MODEL_OPTIONS.get(model_id, model_id)
+                st.write(f"• **{display_name}**")
+        
+        with cols[1]:
+            if st.button("🗑️ Clear All", key="clear_browser_selection"):
+                st.session_state.selected_models_browser = []
+                st.rerun()
+        
+        if st.button("🚀 Use These Models in Chat", type="primary", use_container_width=True):
+            # Transfer selected models to main chat
+            st.session_state.transfer_models = st.session_state.selected_models_browser
+            st.success("✅ Models transferred! Switch to the Chat tab to start chatting.")
+    
+    # Export functionality
+    with st.expander("📤 Export Model Information", expanded=False):
+        if st.button("📋 Copy All Models as JSON"):
+            model_json = json.dumps(MODEL_OPTIONS, indent=2)
+            st.code(model_json, language="json")
+            st.success("Model list displayed above - copy as needed!")
+        
+        if st.button("📊 Download Model Statistics CSV"):
+            # Create a comprehensive model DataFrame
+            model_data = []
+            for model_id, display_name in MODEL_OPTIONS.items():
+                provider = model_id.split('/')[0] if '/' in model_id else 'other'
+                size = 'Unknown'
+                if any(x in display_name.lower() for x in ['1b', '3b', '7b', '8b']):
+                    size = 'Small (≤8B)'
+                elif any(x in display_name.lower() for x in ['11b', '12b', '14b', '24b', '27b', '30b', '32b']):
+                    size = 'Medium (9B-32B)'
+                elif any(x in display_name.lower() for x in ['70b', '72b']):
+                    size = 'Large (70B+)'
+                elif any(x in display_name.lower() for x in ['235b', '253b', '405b']):
+                    size = 'Ultra Large (200B+)'
+                
+                model_data.append({
+                    'Model ID': model_id,
+                    'Display Name': display_name,
+                    'Provider': provider.title(),
+                    'Cost': 'FREE',
+                    'Size Category': size
+                })
+            
+            df = pd.DataFrame(model_data)
+            csv = df.to_csv(index=False)
+            st.download_button(
+                label="📥 Download CSV",
+                data=csv,
+                file_name="openrouter_models.csv",
+                mime="text/csv"
+            )
 
 def chat_interface():
     """Main chat interface function"""
@@ -1145,7 +2136,7 @@ def chat_interface():
         cols = st.columns(2)
         for i, (name, model_id) in enumerate(quick_models.items()):
             with cols[i % 2]:
-                if st.button(name, key=f"quick_{i}", use_container_width=True):
+                if st.button(name, key=f"quick_chat_{i}", use_container_width=True):
                     if model_id not in selected_models:
                         selected_models.append(model_id)
                         st.rerun()
@@ -1324,7 +2315,7 @@ def chat_interface():
                 # Individual model controls
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_{model}"):
+                    if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_tab_{idx}"):
                         st.session_state.chat_history[model] = []
                         st.rerun()
 
@@ -1368,7 +2359,7 @@ def chat_interface():
                         st.chat_message("assistant").markdown(msg["content"])
                 
                 # Individual clear button
-                if st.button(f"Clear", key=f"clear_{model}", help=f"Clear {MODEL_OPTIONS[model]}"):
+                if st.button(f"Clear", key=f"clear_col_{idx}", help=f"Clear {MODEL_OPTIONS[model]}"):
                     st.session_state.chat_history[model] = []
                     st.rerun()
 
@@ -1383,398 +2374,16 @@ def chat_interface():
                 model_messages = len(st.session_state.chat_history.get(model, []))
                 st.write(f"- {MODEL_OPTIONS[model]}: {model_messages} messages")
 
-# Custom CSS for better styling
-st.markdown("""
-<style>
-    .model-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 10px;
-        text-align: center;
-        font-weight: bold;
-    }
-    .status-box {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 10px;
-        margin: 5px 0;
-        background-color: #f8f9fa;
-    }
-    .error-box {
-        border: 1px solid #dc3545;
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-    .success-box {
-        border: 1px solid #28a745;
-        background-color: #d4edda;
-        color: #155724;
-    }
-</style>
-""", unsafe_allow_html=True)
+# ---- MAIN APP ----
+st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide", page_icon="🧠")
 
-st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
+# Main navigation
+tab1, tab2 = st.tabs(["💬 Chat", "🔍 Model Browser"])
 
-# ---- SIDEBAR ----
-with st.sidebar:
-    st.header("🔐 API Access")
-    
-    # Check if environment API key exists
-    env_api_key = api_key
-    
-    # API Key source selection
-    api_source = st.radio(
-        "Choose API Key Source:",
-        ["Environment Variable", "Manual Input"],
-        help="Select how you want to provide your OpenRouter API key"
-    )
-    
-    final_api_key = None
-    
-    if api_source == "Environment Variable":
-        if env_api_key:
-            env_api_key = env_api_key.strip()
-            is_valid, message = validate_api_key(env_api_key)
-            
-            if is_valid:
-                # Show partial key for verification
-                masked_key = env_api_key[:8] + "..." + env_api_key[-4:] if len(env_api_key) > 12 else "sk-..."
-                st.success(f"✅ Environment API key loaded: `{masked_key}`")
-                final_api_key = env_api_key
-                
-                # Option to view/edit the key
-                with st.expander("🔍 View/Edit Environment Key", expanded=False):
-                    edited_key = st.text_input(
-                        "Current environment key:",
-                        value=env_api_key,
-                        type="password",
-                        help="Edit if needed"
-                    )
-                    if edited_key != env_api_key:
-                        is_valid_edited, message_edited = validate_api_key(edited_key)
-                        if is_valid_edited:
-                            st.info("✅ Using edited key")
-                            final_api_key = edited_key
-                        else:
-                            st.error(f"❌ Edited key invalid: {message_edited}")
-            else:
-                st.error(f"❌ Environment API key issue: {message}")
-                st.info("💡 Switch to 'Manual Input' or fix your .env file")
-        else:
-            st.warning("⚠️ No OPENROUTER_API_KEY found in environment")
-            st.info("💡 Create a `.env` file with: `OPENROUTER_API_KEY=your-key-here`")
-            st.info("💡 Or switch to 'Manual Input' below")
-    
-    elif api_source == "Manual Input":
-        st.info("🔑 Enter your OpenRouter API key manually")
-        
-        manual_key = st.text_input(
-            "API Key:",
-            type="password",
-            help="Get your key from https://openrouter.ai/keys",
-            placeholder="sk-or-v1-..."
-        )
-        
-        if manual_key:
-            manual_key = manual_key.strip()
-            is_valid, message = validate_api_key(manual_key)
-            if is_valid:
-                masked_key = manual_key[:8] + "..." + manual_key[-4:] if len(manual_key) > 12 else "sk-..."
-                st.success(f"✅ Manual API key validated: `{masked_key}`")
-                final_api_key = manual_key
-            else:
-                st.error(f"❌ {message}")
-        else:
-            st.warning("⚠️ Please enter your API key above")
-    
-    # Final validation and assignment
-    if final_api_key:
-        api_key = final_api_key
-        
-        # Quick reference links
-        with st.expander("🔗 Quick Links", expanded=False):
-            st.markdown("""
-            - [Get API Key](https://openrouter.ai/keys) 🗝️
-            - [View Usage](https://openrouter.ai/usage) 📊  
-            - [Check Credits](https://openrouter.ai/credits) 💳
-            - [Documentation](https://openrouter.ai/docs) 📚
-            """)
-    else:
-        st.error("❌ No valid API key available")
-        st.stop()
+with tab1:
+    # Main chat interface
+    chat_interface()
 
-    st.divider()
-    st.header("🔧 Connection Test")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🧪 Test API Connection", help="Test if your API key works", use_container_width=True):
-            with st.spinner("Testing connection..."):
-                # Use a simple test model for the connection test
-                test_model = "deepseek/deepseek-v3-base:free"
-                test_response = call_model_api(
-                    test_model,
-                    [{"role": "user", "content": "Hi"}],
-                    api_key,
-                    0.1,
-                    10,
-                    30,
-                    ""  # No system message for test
-                )
-                if test_response.startswith("🔐") or test_response.startswith("❌"):
-                    st.error(f"❌ Connection failed")
-                    st.error(test_response)
-                else:
-                    st.success("✅ API connection successful!")
-                    st.info(f"Test response: {test_response[:100]}...")
-    
-    with col2:
-        if st.button("📋 Copy API Setup", help="Copy .env file format", use_container_width=True):
-            if api_key:
-                env_format = f"OPENROUTER_API_KEY={api_key}"
-                st.code(env_format, language="bash")
-                st.info("📝 Copy this to your .env file")
-
-    st.divider()
-    st.header("🤖 Model Selection")
-    selected_models = st.multiselect(
-        "Choose one or more models to compare:",
-        options=list(MODEL_OPTIONS.keys()),
-        format_func=lambda x: MODEL_OPTIONS[x],
-        default=["deepseek/deepseek-v3-base:free"],
-        help="Select multiple models to compare their responses."
-    )
-
-    # Layout options
-    st.subheader("📱 Layout")
-    if len(selected_models) > 2:
-        layout_mode = st.radio(
-            "Choose layout for multiple models:",
-            ["Tabs", "Columns", "Stacked"],
-            help="Tabs are better for 3+ models"
-        )
-    else:
-        layout_mode = "Columns"
-
-    st.divider()
-    st.header("💬 Conversation")
-    system_message = st.text_area(
-        "System Message (Optional):",
-        placeholder="You are a helpful assistant...",
-        help="Set the behavior/personality of the AI models"
-    )
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🗑️ Clear All", help="Clear all conversations"):
-            st.session_state.chat_history = {}
-            st.rerun()
-    
-    with col2:
-        if st.button("📋 Export", help="Copy conversation to clipboard"):
-            if "chat_history" in st.session_state:
-                # Create export text
-                export_text = "# AI Chatbot Conversation Export\n\n"
-                for model in selected_models:
-                    if model in st.session_state.chat_history:
-                        export_text += f"## {MODEL_OPTIONS[model]}\n\n"
-                        for msg in st.session_state.chat_history[model]:
-                            role = "**User**" if msg["role"] == "user" else "**Assistant**"
-                            export_text += f"{role}: {msg['content']}\n\n"
-                        export_text += "---\n\n"
-                st.text_area("Copy this text:", export_text, height=100)
-
-    st.divider()
-    with st.expander("⚙️ Advanced Settings", expanded=False):
-        temperature = st.slider(
-            "Temperature",
-            0.0, 1.5, 0.7, 0.05,
-            help="Higher = more creative, lower = more focused."
-        )
-        max_tokens = st.slider(
-            "Max tokens",
-            16, 2048, 512, 16,
-            help="Maximum length of the model's response."
-        )
-        timeout = st.slider(
-            "Timeout (seconds)",
-            10, 120, 60, 5,
-            help="Request timeout for API calls."
-        )
-        
-        if st.button("Restore Defaults"):
-            st.session_state.temperature = 0.7
-            st.session_state.max_tokens = 512
-            st.session_state.timeout = 60
-            st.rerun()
-
-    st.markdown("---")
-    st.caption("Made with ❤️ using Streamlit and OpenRouter")
-
-if not selected_models:
-    st.warning("Please select at least one model to continue.")
-    st.stop()
-
-# Final API key check before proceeding
-if not api_key or not api_key.strip():
-    st.error("❌ No valid API key available. Please configure your API key in the sidebar.")
-    st.stop()
-
-# ---- SESSION STATE FOR CHAT ----
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = {}
-
-if "model_status" not in st.session_state:
-    st.session_state.model_status = {}
-
-for model in selected_models:
-    if model not in st.session_state.chat_history:
-        st.session_state.chat_history[model] = []
-    if model not in st.session_state.model_status:
-        st.session_state.model_status[model] = "Ready"
-
-# ---- MAIN CHAT INTERFACE ----
-user_input = st.chat_input("Type your message and press Enter...")
-
-if user_input:
-    # Add user message to all selected models
-    for model in selected_models:
-        st.session_state.chat_history[model].append({"role": "user", "content": user_input})
-    
-    # Show progress
-    progress_container = st.container()
-    with progress_container:
-        st.info("🤖 Getting responses from selected models...")
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-    
-    # Update status for all models
-    for model in selected_models:
-        st.session_state.model_status[model] = "Generating..."
-    
-    if len(selected_models) == 1:
-        # Single model - simple call
-        model = selected_models[0]
-        status_text.text(f"Calling {MODEL_OPTIONS[model]}...")
-        response = call_model_api(
-            model,
-            st.session_state.chat_history[model],
-            api_key,
-            temperature,
-            max_tokens,
-            timeout,
-            system_message
-        )
-        st.session_state.chat_history[model].append({"role": "assistant", "content": response})
-        st.session_state.model_status[model] = "Complete"
-        progress_bar.progress(1.0)
-    else:
-        # Multiple models - parallel calls
-        status_text.text("Calling multiple models in parallel...")
-        
-        # Get messages for parallel call (excluding the system message part)
-        messages_for_api = st.session_state.chat_history[selected_models[0]]
-        
-        results = call_models_parallel(
-            selected_models, messages_for_api, api_key, temperature, max_tokens, timeout, system_message
-        )
-        
-        # Add responses to chat history
-        for i, model in enumerate(selected_models):
-            st.session_state.chat_history[model].append({
-                "role": "assistant", 
-                "content": results[model]
-            })
-            st.session_state.model_status[model] = "Complete"
-            progress_bar.progress((i + 1) / len(selected_models))
-    
-    # Clear progress indicators
-    progress_container.empty()
-    st.rerun()
-
-# ---- DISPLAY CHAT BASED ON LAYOUT ----
-if layout_mode == "Tabs" and len(selected_models) > 1:
-    # Tab layout for better readability with many models
-    tabs = st.tabs([MODEL_OPTIONS[model] for model in selected_models])
-    
-    for idx, model in enumerate(selected_models):
-        with tabs[idx]:
-            # Model status
-            status = st.session_state.model_status.get(model, "Ready")
-            if status == "Generating...":
-                st.info("🤖 Generating response...")
-            elif status == "Complete":
-                st.success("✅ Response ready")
-            
-            # Chat history
-            chat_container = st.container()
-            with chat_container:
-                for msg in st.session_state.chat_history.get(model, []):
-                    if msg["role"] == "user":
-                        st.chat_message("user").markdown(msg["content"])
-                    else:
-                        st.chat_message("assistant").markdown(msg["content"])
-            
-            # Individual model controls
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_{model}"):
-                    st.session_state.chat_history[model] = []
-                    st.rerun()
-
-elif layout_mode == "Stacked":
-    # Stacked layout - one model per row
-    for model in selected_models:
-        st.markdown(f'<div class="model-header">{MODEL_OPTIONS[model]}</div>', unsafe_allow_html=True)
-        
-        # Status indicator
-        status = st.session_state.model_status.get(model, "Ready")
-        if status == "Generating...":
-            st.info("🤖 Generating response...")
-        
-        # Chat messages
-        for msg in st.session_state.chat_history.get(model, []):
-            if msg["role"] == "user":
-                st.chat_message("user").markdown(msg["content"])
-            else:
-                st.chat_message("assistant").markdown(msg["content"])
-        
-        st.markdown("---")
-
-else:
-    # Column layout (default for 1-2 models)
-    cols = st.columns(len(selected_models))
-    
-    for idx, model in enumerate(selected_models):
-        with cols[idx]:
-            st.markdown(f'<div class="model-header">{MODEL_OPTIONS[model]}</div>', unsafe_allow_html=True)
-            
-            # Status indicator
-            status = st.session_state.model_status.get(model, "Ready")
-            if status == "Generating...":
-                st.info("🤖 Generating...")
-            
-            # Chat history
-            for msg in st.session_state.chat_history.get(model, []):
-                if msg["role"] == "user":
-                    st.chat_message("user").markdown(msg["content"])
-                else:
-                    st.chat_message("assistant").markdown(msg["content"])
-            
-            # Individual clear button
-            if st.button(f"Clear", key=f"clear_{model}", help=f"Clear {MODEL_OPTIONS[model]}"):
-                st.session_state.chat_history[model] = []
-                st.rerun()
-
-# ---- FOOTER INFO ----
-if st.session_state.chat_history:
-    with st.expander("📊 Session Info"):
-        total_messages = sum(len(history) for history in st.session_state.chat_history.values())
-        st.write(f"**Total messages:** {total_messages}")
-        st.write(f"**Active models:** {len(selected_models)}")
-        
-        for model in selected_models:
-            model_messages = len(st.session_state.chat_history.get(model, []))
-            st.write(f"- {MODEL_OPTIONS[model]}: {model_messages} messages")
+with tab2:
+    # Model browser interface
+    render_model_browser()

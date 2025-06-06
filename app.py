@@ -1,6 +1,10 @@
 import os
 import streamlit as st
 import requests
+import asyncio
+import aiohttp
+import time
+from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 
 # --- Load API key from .env file ---
@@ -96,8 +100,42 @@ MODEL_OPTIONS = {
 
 # ---- STREAMLIT UI ----
 st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide")
+
+# Custom CSS for better styling
+st.markdown("""
+<style>
+    .model-header {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .status-box {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #f8f9fa;
+    }
+    .error-box {
+        border: 1px solid #dc3545;
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .success-box {
+        border: 1px solid #28a745;
+        background-color: #d4edda;
+        color: #155724;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
 
+# ---- SIDEBAR ----
 with st.sidebar:
     st.header("🔐 API Access")
     if api_key:
@@ -116,6 +154,45 @@ with st.sidebar:
         help="Select multiple models to compare their responses."
     )
 
+    # Layout options
+    st.subheader("📱 Layout")
+    if len(selected_models) > 2:
+        layout_mode = st.radio(
+            "Choose layout for multiple models:",
+            ["Tabs", "Columns", "Stacked"],
+            help="Tabs are better for 3+ models"
+        )
+    else:
+        layout_mode = "Columns"
+
+    st.divider()
+    st.header("💬 Conversation")
+    system_message = st.text_area(
+        "System Message (Optional):",
+        placeholder="You are a helpful assistant...",
+        help="Set the behavior/personality of the AI models"
+    )
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🗑️ Clear All", help="Clear all conversations"):
+            st.session_state.chat_history = {}
+            st.rerun()
+    
+    with col2:
+        if st.button("📋 Export", help="Copy conversation to clipboard"):
+            if "chat_history" in st.session_state:
+                # Create export text
+                export_text = "# AI Chatbot Conversation Export\n\n"
+                for model in selected_models:
+                    if model in st.session_state.chat_history:
+                        export_text += f"## {MODEL_OPTIONS[model]}\n\n"
+                        for msg in st.session_state.chat_history[model]:
+                            role = "**User**" if msg["role"] == "user" else "**Assistant**"
+                            export_text += f"{role}: {msg['content']}\n\n"
+                        export_text += "---\n\n"
+                st.text_area("Copy this text:", export_text, height=100)
+
     st.divider()
     with st.expander("⚙️ Advanced Settings", expanded=False):
         temperature = st.slider(
@@ -125,79 +202,260 @@ with st.sidebar:
         )
         max_tokens = st.slider(
             "Max tokens",
-            16, 1024, 256, 8,
+            16, 2048, 512, 16,
             help="Maximum length of the model's response."
         )
+        timeout = st.slider(
+            "Timeout (seconds)",
+            10, 120, 60, 5,
+            help="Request timeout for API calls."
+        )
+        
         if st.button("Restore Defaults"):
-            temperature = 0.7
-            max_tokens = 256
+            st.session_state.temperature = 0.7
+            st.session_state.max_tokens = 512
+            st.session_state.timeout = 60
+            st.rerun()
 
     st.markdown("---")
     st.caption("Made with ❤️ using Streamlit and OpenRouter")
 
 if not selected_models:
-    st.warning("Please select at least one model.")
+    st.warning("Please select at least one model to continue.")
     st.stop()
 
 # ---- SESSION STATE FOR CHAT ----
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = {}
 
+if "model_status" not in st.session_state:
+    st.session_state.model_status = {}
+
 for model in selected_models:
     if model not in st.session_state.chat_history:
         st.session_state.chat_history[model] = []
+    if model not in st.session_state.model_status:
+        st.session_state.model_status[model] = "Ready"
 
-user_input = st.chat_input("Type your message and press Enter...")
-
-# ---- API CALL FUNCTION ----
-def call_model_api(model_id, messages, api_key, temperature, max_tokens):
+# ---- IMPROVED API CALL FUNCTION ----
+def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout=60):
+    """Enhanced API call with better error handling and logging"""
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://streamlit.app",  # For OpenRouter analytics
+        "X-Title": "Multi-Model Chatbot"
     }
+    
+    # Add system message if provided
+    if system_message.strip():
+        messages_with_system = [{"role": "system", "content": system_message.strip()}] + messages
+    else:
+        messages_with_system = messages
+    
     data = {
         "model": model_id,
-        "messages": messages,
+        "messages": messages_with_system,
         "temperature": temperature,
         "max_tokens": max_tokens,
+        "stream": False
     }
+    
     try:
-        response = requests.post(url, headers=headers, json=data, timeout=60)
-        response.raise_for_status()
+        response = requests.post(url, headers=headers, json=data, timeout=timeout)
+        
+        if response.status_code == 429:
+            return "⏳ Rate limit exceeded. Please wait a moment and try again."
+        elif response.status_code == 402:
+            return "💳 Insufficient credits. Please check your OpenRouter account."
+        elif response.status_code == 400:
+            return "❌ Bad request. Please check your input."
+        elif response.status_code != 200:
+            return f"❌ HTTP {response.status_code}: {response.text}"
+        
         result = response.json()
-        return result['choices'][0]['message']['content']
+        
+        if 'choices' not in result or not result['choices']:
+            return "❌ No response generated."
+        
+        content = result['choices'][0]['message']['content']
+        
+        # Add usage info if available
+        if 'usage' in result:
+            usage = result['usage']
+            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')}*"
+        
+        return content
+        
+    except requests.exceptions.Timeout:
+        return f"⏰ Request timed out after {timeout} seconds."
+    except requests.exceptions.ConnectionError:
+        return "🌐 Connection error. Please check your internet connection."
+    except requests.exceptions.RequestException as e:
+        return f"❌ Request error: {str(e)}"
     except Exception as e:
-        # Show detailed error message from API if available
-        try:
-            return f"❌ Error: {response.json()}"
-        except:
-            return f"❌ Error: {e}"
+        return f"❌ Unexpected error: {str(e)}"
 
-# ---- MAIN CHAT LOGIC ----
+def call_models_parallel(models, messages, api_key, temperature, max_tokens, timeout):
+    """Call multiple models in parallel for faster responses"""
+    with ThreadPoolExecutor(max_workers=len(models)) as executor:
+        futures = {}
+        
+        for model in models:
+            future = executor.submit(
+                call_model_api, model, messages, api_key, temperature, max_tokens, timeout
+            )
+            futures[model] = future
+        
+        results = {}
+        for model, future in futures.items():
+            try:
+                results[model] = future.result(timeout=timeout + 10)
+            except Exception as e:
+                results[model] = f"❌ Error: {str(e)}"
+        
+        return results
+
+# ---- MAIN CHAT INTERFACE ----
+user_input = st.chat_input("Type your message and press Enter...")
+
 if user_input:
+    # Add user message to all selected models
     for model in selected_models:
         st.session_state.chat_history[model].append({"role": "user", "content": user_input})
-
+    
+    # Show progress
+    progress_container = st.container()
+    with progress_container:
+        st.info("🤖 Getting responses from selected models...")
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+    
+    # Update status for all models
     for model in selected_models:
-        with st.spinner(f"Getting response from {MODEL_OPTIONS[model]}..."):
-            response = call_model_api(
-                model,
-                st.session_state.chat_history[model],
-                api_key,
-                temperature,
-                max_tokens
-            )
-            st.session_state.chat_history[model].append({"role": "assistant", "content": response})
+        st.session_state.model_status[model] = "Generating..."
+    
+    if len(selected_models) == 1:
+        # Single model - simple call
+        model = selected_models[0]
+        status_text.text(f"Calling {MODEL_OPTIONS[model]}...")
+        response = call_model_api(
+            model,
+            st.session_state.chat_history[model],
+            api_key,
+            temperature,
+            max_tokens,
+            timeout
+        )
+        st.session_state.chat_history[model].append({"role": "assistant", "content": response})
+        st.session_state.model_status[model] = "Complete"
+        progress_bar.progress(1.0)
+    else:
+        # Multiple models - parallel calls
+        status_text.text("Calling multiple models in parallel...")
+        
+        # Get messages for parallel call (excluding the system message part)
+        messages_for_api = st.session_state.chat_history[selected_models[0]]
+        
+        results = call_models_parallel(
+            selected_models, messages_for_api, api_key, temperature, max_tokens, timeout
+        )
+        
+        # Add responses to chat history
+        for i, model in enumerate(selected_models):
+            st.session_state.chat_history[model].append({
+                "role": "assistant", 
+                "content": results[model]
+            })
+            st.session_state.model_status[model] = "Complete"
+            progress_bar.progress((i + 1) / len(selected_models))
+    
+    # Clear progress indicators
+    progress_container.empty()
+    st.rerun()
 
-# ---- DISPLAY CHAT ----
-cols = st.columns(len(selected_models))
-for idx, model in enumerate(selected_models):
-    with cols[idx]:
-        st.subheader(MODEL_OPTIONS[model])
-        for msg in st.session_state.chat_history[model]:
+# ---- DISPLAY CHAT BASED ON LAYOUT ----
+if layout_mode == "Tabs" and len(selected_models) > 1:
+    # Tab layout for better readability with many models
+    tabs = st.tabs([MODEL_OPTIONS[model] for model in selected_models])
+    
+    for idx, model in enumerate(selected_models):
+        with tabs[idx]:
+            # Model status
+            status = st.session_state.model_status.get(model, "Ready")
+            if status == "Generating...":
+                st.info("🤖 Generating response...")
+            elif status == "Complete":
+                st.success("✅ Response ready")
+            
+            # Chat history
+            chat_container = st.container()
+            with chat_container:
+                for msg in st.session_state.chat_history.get(model, []):
+                    if msg["role"] == "user":
+                        st.chat_message("user").markdown(msg["content"])
+                    else:
+                        st.chat_message("assistant").markdown(msg["content"])
+            
+            # Individual model controls
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(f"Clear {MODEL_OPTIONS[model][:20]}...", key=f"clear_{model}"):
+                    st.session_state.chat_history[model] = []
+                    st.rerun()
+
+elif layout_mode == "Stacked":
+    # Stacked layout - one model per row
+    for model in selected_models:
+        st.markdown(f'<div class="model-header">{MODEL_OPTIONS[model]}</div>', unsafe_allow_html=True)
+        
+        # Status indicator
+        status = st.session_state.model_status.get(model, "Ready")
+        if status == "Generating...":
+            st.info("🤖 Generating response...")
+        
+        # Chat messages
+        for msg in st.session_state.chat_history.get(model, []):
             if msg["role"] == "user":
                 st.chat_message("user").markdown(msg["content"])
             else:
                 st.chat_message("assistant").markdown(msg["content"])
+        
         st.markdown("---")
+
+else:
+    # Column layout (default for 1-2 models)
+    cols = st.columns(len(selected_models))
+    
+    for idx, model in enumerate(selected_models):
+        with cols[idx]:
+            st.markdown(f'<div class="model-header">{MODEL_OPTIONS[model]}</div>', unsafe_allow_html=True)
+            
+            # Status indicator
+            status = st.session_state.model_status.get(model, "Ready")
+            if status == "Generating...":
+                st.info("🤖 Generating...")
+            
+            # Chat history
+            for msg in st.session_state.chat_history.get(model, []):
+                if msg["role"] == "user":
+                    st.chat_message("user").markdown(msg["content"])
+                else:
+                    st.chat_message("assistant").markdown(msg["content"])
+            
+            # Individual clear button
+            if st.button(f"Clear", key=f"clear_{model}", help=f"Clear {MODEL_OPTIONS[model]}"):
+                st.session_state.chat_history[model] = []
+                st.rerun()
+
+# ---- FOOTER INFO ----
+if st.session_state.chat_history:
+    with st.expander("📊 Session Info"):
+        total_messages = sum(len(history) for history in st.session_state.chat_history.values())
+        st.write(f"**Total messages:** {total_messages}")
+        st.write(f"**Active models:** {len(selected_models)}")
+        
+        for model in selected_models:
+            model_messages = len(st.session_state.chat_history.get(model, []))
+            st.write(f"- {MODEL_OPTIONS[model]}: {model_messages} messages")

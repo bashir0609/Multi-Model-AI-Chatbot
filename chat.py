@@ -16,7 +16,7 @@ def chat_interface():
         default_models = st.session_state.transfer_models
         del st.session_state.transfer_models  # Clean up
     else:
-        default_models = ["deepseek/deepseek-v3-base:free"]
+        default_models = ["deepseek/deepseek-r1:free"]
 
     # Custom CSS for better styling
     st.markdown("""
@@ -149,7 +149,7 @@ def chat_interface():
                 if current_api_key:  # Check if we have a valid key
                     with st.spinner("Testing connection..."):
                         # Use a simple test model for the connection test
-                        test_model = "deepseek/deepseek-v3-base:free"
+                        test_model = "deepseek/deepseek-r1:free"
                         test_response = call_model_api(
                             test_model,
                             [{"role": "user", "content": "Hi"}],
@@ -203,7 +203,7 @@ def chat_interface():
             "🧠 Reasoning": "deepseek/deepseek-r1:free",
             "🏆 Best Overall": "meta-llama/llama-3.3-70b-instruct:free", 
             "🚀 Fastest": "meta-llama/llama-3.2-1b-instruct:free",
-            "💻 Coding": "openrouter/optimus-alpha:free",
+            "💻 Coding": "qwen/qwen2.5-coder-32b-instruct:free",
             "🔬 Latest": "google/gemini-2.5-flash:free",
             "💰 Ultra-Cheap": "mistralai/ministral-3b"
         }

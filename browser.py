@@ -1,4 +1,4 @@
-# browser.py - Model browser interface
+# browser.py - Model browser interface (Updated)
 
 import streamlit as st
 import pandas as pd
@@ -21,7 +21,7 @@ def render_model_browser():
         st.success("No cost!")
     with col3:
         st.metric("Ultra-Cheap", stats['cheap'])
-        st.info("Under $0.10/1M")
+        st.info("Under $0.50/1M")
     with col4:
         st.metric("Providers", len(stats['providers']))
     
@@ -36,9 +36,9 @@ def render_model_browser():
           - 1000 requests/day (after buying $10+ credits)
         
         ### Ultra-Cheap Models
-        - **Cost**: $0.02 - $0.08 per million tokens
-        - **Comparison**: ~750 words = 1000 tokens = $0.02-0.08
-        - **Example**: A 1000-word article costs $0.02-0.08 to generate
+        - **Cost**: $0.02 - $0.50 per million tokens
+        - **Comparison**: ~750 words = 1000 tokens = $0.02-0.50
+        - **Example**: A 1000-word article costs $0.02-0.50 to generate
         
         ### How to Get Large Free Limits
         1. **Use FREE models** - Completely free with rate limits
@@ -52,7 +52,7 @@ def render_model_browser():
         provider_df = provider_df.sort_values('Models', ascending=False)
         st.dataframe(provider_df, use_container_width=True)
     
-    # Quick recommendations
+    # Quick recommendations (Updated with current models)
     st.subheader("⭐ Quick Recommendations")
     
     recommendations = {
@@ -60,7 +60,7 @@ def render_model_browser():
         "🧠 Best Reasoning": ("deepseek/deepseek-r1:free", "Advanced reasoning capabilities"),
         "🏆 Most Capable": ("meta-llama/llama-3.3-70b-instruct:free", "Best overall performance"),
         "🔬 Latest Google": ("google/gemini-2.5-flash:free", "Cutting-edge multimodal"),
-        "💻 Code Expert": ("openrouter/optimus-alpha:free", "1M context coding specialist"),
+        "💻 Code Expert": ("qwen/qwen2.5-coder-32b-instruct:free", "32B coding specialist"),
         "👁️ Vision": ("meta-llama/llama-3.2-11b-vision-instruct:free", "Image understanding"),
         "🦣 Largest Free": ("meta-llama/llama-4-maverick:free", "400B MoE parameters"),
         "💰 Cheapest Paid": ("mistralai/ministral-3b", "Only $0.04 per million tokens")

@@ -2,3 +2,4 @@ streamlit
 requests
 python-dotenv
 aiohttp
+pandas>=2.0.0

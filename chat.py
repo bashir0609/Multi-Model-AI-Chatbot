@@ -51,6 +51,8 @@ def chat_interface():
     """, unsafe_allow_html=True)
 
     # ---- SIDEBAR ----
+    current_api_key = None  # Initialize outside the sidebar context
+    
     with st.sidebar:
         st.header("🔐 API Access")
         
@@ -122,7 +124,7 @@ def chat_interface():
             else:
                 st.warning("⚠️ Please enter your API key above")
         
-        # Final validation and assignment
+        # Final validation and assignment (inside sidebar but will be available outside)
         if final_api_key:
             current_api_key = final_api_key
             
@@ -144,24 +146,27 @@ def chat_interface():
         col1, col2 = st.columns(2)
         with col1:
             if st.button("🧪 Test API Connection", help="Test if your API key works", use_container_width=True):
-                with st.spinner("Testing connection..."):
-                    # Use a simple test model for the connection test
-                    test_model = "deepseek/deepseek-v3-base:free"
-                    test_response = call_model_api(
-                        test_model,
-                        [{"role": "user", "content": "Hi"}],
-                        current_api_key,
-                        0.1,
-                        10,
-                        30,
-                        ""  # No system message for test
-                    )
-                    if test_response.startswith("🔐") or test_response.startswith("❌"):
-                        st.error(f"❌ Connection failed")
-                        st.error(test_response)
-                    else:
-                        st.success("✅ API connection successful!")
-                        st.info(f"Test response: {test_response[:100]}...")
+                if current_api_key:  # Check if we have a valid key
+                    with st.spinner("Testing connection..."):
+                        # Use a simple test model for the connection test
+                        test_model = "deepseek/deepseek-v3-base:free"
+                        test_response = call_model_api(
+                            test_model,
+                            [{"role": "user", "content": "Hi"}],
+                            current_api_key,
+                            0.1,
+                            10,
+                            30,
+                            ""  # No system message for test
+                        )
+                        if test_response.startswith("🔐") or test_response.startswith("❌"):
+                            st.error(f"❌ Connection failed")
+                            st.error(test_response)
+                        else:
+                            st.success("✅ API connection successful!")
+                            st.info(f"Test response: {test_response[:100]}...")
+                else:
+                    st.error("❌ No API key available for testing")
         
         with col2:
             if st.button("📋 Copy API Setup", help="Copy .env file format", use_container_width=True):
@@ -169,16 +174,28 @@ def chat_interface():
                     env_format = f"OPENROUTER_API_KEY={current_api_key}"
                     st.code(env_format, language="bash")
                     st.info("📝 Copy this to your .env file")
+                else:
+                    st.error("❌ No API key available")
 
         st.divider()
         st.header("🤖 Model Selection")
+        
+        # Initialize selected models in session state
+        if 'chat_selected_models' not in st.session_state:
+            st.session_state.chat_selected_models = default_models
+        
         selected_models = st.multiselect(
             "Choose one or more models to compare:",
             options=list(MODEL_OPTIONS.keys()),
             format_func=lambda x: MODEL_OPTIONS[x],
-            default=default_models,
-            help="Select multiple models to compare their responses."
+            default=st.session_state.chat_selected_models,
+            help="Select multiple models to compare their responses.",
+            key="model_selector"
         )
+        
+        # Update session state when selection changes
+        if selected_models != st.session_state.chat_selected_models:
+            st.session_state.chat_selected_models = selected_models
 
         # Quick model selection buttons
         st.subheader("⚡ Quick Select")
@@ -200,8 +217,8 @@ def chat_interface():
                 cost_badge = "🆓" if cost_info['type'] == 'free' else "💰" if cost_info['type'] == 'ultra_cheap' else "💳"
                 
                 if st.button(f"{cost_badge} {name}", key=f"quick_chat_{i}", use_container_width=True):
-                    if model_id not in selected_models:
-                        selected_models.append(model_id)
+                    if model_id not in st.session_state.chat_selected_models:
+                        st.session_state.chat_selected_models.append(model_id)
                         st.rerun()
 
         # Layout options
@@ -269,6 +286,9 @@ def chat_interface():
 
         st.markdown("---")
         st.caption("Made with ❤️ using Streamlit and OpenRouter")
+
+    # Use the selected models from session state for consistency
+    selected_models = st.session_state.chat_selected_models
 
     if not selected_models:
         st.warning("Please select at least one model to continue.")

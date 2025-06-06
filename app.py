@@ -116,6 +116,116 @@ def validate_api_key(key):
     
     return True, "API key format looks valid"
 
+# ---- IMPROVED API CALL FUNCTION ----
+def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout=60, system_message=""):
+    """Enhanced API call with better error handling and logging"""
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    
+    # Clean and validate API key one more time
+    if not api_key or not api_key.strip():
+        return "❌ API key is empty. Please check your configuration."
+    
+    api_key = api_key.strip()
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://streamlit.app",  # For OpenRouter analytics
+        "X-Title": "Multi-Model Chatbot"
+    }
+    
+    # Add system message if provided
+    if system_message.strip():
+        messages_with_system = [{"role": "system", "content": system_message.strip()}] + messages
+    else:
+        messages_with_system = messages
+    
+    data = {
+        "model": model_id,
+        "messages": messages_with_system,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=timeout)
+        
+        # Enhanced error handling with specific messages
+        if response.status_code == 401:
+            error_detail = ""
+            try:
+                error_json = response.json()
+                if 'error' in error_json:
+                    error_detail = f": {error_json['error'].get('message', 'Unknown auth error')}"
+            except:
+                pass
+            return f"🔐 Authentication failed{error_detail}. Please check your API key at https://openrouter.ai/keys"
+        
+        elif response.status_code == 429:
+            return "⏳ Rate limit exceeded. Please wait a moment and try again."
+        elif response.status_code == 402:
+            return "💳 Insufficient credits. Please check your OpenRouter account."
+        elif response.status_code == 400:
+            try:
+                error_json = response.json()
+                error_msg = error_json.get('error', {}).get('message', 'Bad request')
+                return f"❌ Bad request: {error_msg}"
+            except:
+                return "❌ Bad request. Please check your input."
+        elif response.status_code == 404:
+            return f"❌ Model '{model_id}' not found. It may be unavailable or discontinued."
+        elif response.status_code != 200:
+            try:
+                error_json = response.json()
+                error_msg = error_json.get('error', {}).get('message', f'HTTP {response.status_code}')
+                return f"❌ {error_msg}"
+            except:
+                return f"❌ HTTP {response.status_code}: {response.text[:100]}"
+        
+        result = response.json()
+        
+        if 'choices' not in result or not result['choices']:
+            return "❌ No response generated."
+        
+        content = result['choices'][0]['message']['content']
+        
+        # Add usage info if available
+        if 'usage' in result:
+            usage = result['usage']
+            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')}*"
+        
+        return content
+        
+    except requests.exceptions.Timeout:
+        return f"⏰ Request timed out after {timeout} seconds."
+    except requests.exceptions.ConnectionError:
+        return "🌐 Connection error. Please check your internet connection."
+    except requests.exceptions.RequestException as e:
+        return f"❌ Request error: {str(e)}"
+    except Exception as e:
+        return f"❌ Unexpected error: {str(e)}"
+
+def call_models_parallel(models, messages, api_key, temperature, max_tokens, timeout, system_message=""):
+    """Call multiple models in parallel for faster responses"""
+    with ThreadPoolExecutor(max_workers=len(models)) as executor:
+        futures = {}
+        
+        for model in models:
+            future = executor.submit(
+                call_model_api, model, messages, api_key, temperature, max_tokens, timeout, system_message
+            )
+            futures[model] = future
+        
+        results = {}
+        for model, future in futures.items():
+            try:
+                results[model] = future.result(timeout=timeout + 10)
+            except Exception as e:
+                results[model] = f"❌ Error: {str(e)}"
+        
+        return results
+
 # ---- STREAMLIT UI ----
 st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide")
 
@@ -211,13 +321,16 @@ with st.sidebar:
     st.header("🔧 Connection Test")
     if st.button("🧪 Test API Connection", help="Test if your API key works"):
         with st.spinner("Testing connection..."):
+            # Use a simple test model for the connection test
+            test_model = "deepseek/deepseek-v3-base:free"
             test_response = call_model_api(
-                selected_models[0] if selected_models else "deepseek/deepseek-v3-base:free",
+                test_model,
                 [{"role": "user", "content": "Hi"}],
                 api_key,
                 0.1,
                 10,
-                30
+                30,
+                ""  # No system message for test
             )
             if test_response.startswith("🔐") or test_response.startswith("❌"):
                 st.error(f"Connection failed: {test_response}")
@@ -323,116 +436,6 @@ for model in selected_models:
     if model not in st.session_state.model_status:
         st.session_state.model_status[model] = "Ready"
 
-# ---- IMPROVED API CALL FUNCTION ----
-def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout=60):
-    """Enhanced API call with better error handling and logging"""
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    
-    # Clean and validate API key one more time
-    if not api_key or not api_key.strip():
-        return "❌ API key is empty. Please check your configuration."
-    
-    api_key = api_key.strip()
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://streamlit.app",  # For OpenRouter analytics
-        "X-Title": "Multi-Model Chatbot"
-    }
-    
-    # Add system message if provided
-    if system_message.strip():
-        messages_with_system = [{"role": "system", "content": system_message.strip()}] + messages
-    else:
-        messages_with_system = messages
-    
-    data = {
-        "model": model_id,
-        "messages": messages_with_system,
-        "temperature": temperature,
-        "max_tokens": max_tokens,
-        "stream": False
-    }
-    
-    try:
-        response = requests.post(url, headers=headers, json=data, timeout=timeout)
-        
-        # Enhanced error handling with specific messages
-        if response.status_code == 401:
-            error_detail = ""
-            try:
-                error_json = response.json()
-                if 'error' in error_json:
-                    error_detail = f": {error_json['error'].get('message', 'Unknown auth error')}"
-            except:
-                pass
-            return f"🔐 Authentication failed{error_detail}. Please check your API key at https://openrouter.ai/keys"
-        
-        elif response.status_code == 429:
-            return "⏳ Rate limit exceeded. Please wait a moment and try again."
-        elif response.status_code == 402:
-            return "💳 Insufficient credits. Please check your OpenRouter account."
-        elif response.status_code == 400:
-            try:
-                error_json = response.json()
-                error_msg = error_json.get('error', {}).get('message', 'Bad request')
-                return f"❌ Bad request: {error_msg}"
-            except:
-                return "❌ Bad request. Please check your input."
-        elif response.status_code == 404:
-            return f"❌ Model '{model_id}' not found. It may be unavailable or discontinued."
-        elif response.status_code != 200:
-            try:
-                error_json = response.json()
-                error_msg = error_json.get('error', {}).get('message', f'HTTP {response.status_code}')
-                return f"❌ {error_msg}"
-            except:
-                return f"❌ HTTP {response.status_code}: {response.text[:100]}"
-        
-        result = response.json()
-        
-        if 'choices' not in result or not result['choices']:
-            return "❌ No response generated."
-        
-        content = result['choices'][0]['message']['content']
-        
-        # Add usage info if available
-        if 'usage' in result:
-            usage = result['usage']
-            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')}*"
-        
-        return content
-        
-    except requests.exceptions.Timeout:
-        return f"⏰ Request timed out after {timeout} seconds."
-    except requests.exceptions.ConnectionError:
-        return "🌐 Connection error. Please check your internet connection."
-    except requests.exceptions.RequestException as e:
-        return f"❌ Request error: {str(e)}"
-    except Exception as e:
-        return f"❌ Unexpected error: {str(e)}"
-
-def call_models_parallel(models, messages, api_key, temperature, max_tokens, timeout):
-    """Call multiple models in parallel for faster responses"""
-    with ThreadPoolExecutor(max_workers=len(models)) as executor:
-        futures = {}
-        
-        for model in models:
-            future = executor.submit(
-                call_model_api, model, messages, api_key, temperature, max_tokens, timeout
-            )
-            futures[model] = future
-        
-        results = {}
-        for model, future in futures.items():
-            try:
-                results[model] = future.result(timeout=timeout + 10)
-            except Exception as e:
-                results[model] = f"❌ Error: {str(e)}"
-        
-        return results
-
 # ---- MAIN CHAT INTERFACE ----
 user_input = st.chat_input("Type your message and press Enter...")
 
@@ -462,7 +465,8 @@ if user_input:
             api_key,
             temperature,
             max_tokens,
-            timeout
+            timeout,
+            system_message
         )
         st.session_state.chat_history[model].append({"role": "assistant", "content": response})
         st.session_state.model_status[model] = "Complete"
@@ -475,7 +479,7 @@ if user_input:
         messages_for_api = st.session_state.chat_history[selected_models[0]]
         
         results = call_models_parallel(
-            selected_models, messages_for_api, api_key, temperature, max_tokens, timeout
+            selected_models, messages_for_api, api_key, temperature, max_tokens, timeout, system_message
         )
         
         # Add responses to chat history

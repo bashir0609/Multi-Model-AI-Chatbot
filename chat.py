@@ -16,7 +16,7 @@ def chat_interface():
         default_models = st.session_state.transfer_models
         del st.session_state.transfer_models  # Clean up
     else:
-        default_models = ["deepseek/deepseek-r1:free"]
+        default_models = ["google/gemini-2.0-flash-thinking-exp:free"]
 
     # Custom CSS for better styling
     st.markdown("""
@@ -149,7 +149,7 @@ def chat_interface():
                 if current_api_key:  # Check if we have a valid key
                     with st.spinner("Testing connection..."):
                         # Use a simple test model for the connection test
-                        test_model = "deepseek/deepseek-r1:free"
+                        test_model = "google/gemini-2.0-flash-thinking-exp:free"
                         test_response = call_model_api(
                             test_model,
                             [{"role": "user", "content": "Hi"}],
@@ -200,12 +200,12 @@ def chat_interface():
         # Quick model selection buttons
         st.subheader("⚡ Quick Select")
         quick_models = {
-            "🧠 Reasoning": "deepseek/deepseek-r1:free",
-            "🏆 Best Overall": "meta-llama/llama-3.3-70b-instruct:free", 
-            "🚀 Fastest": "meta-llama/llama-3.2-1b-instruct:free",
-            "💻 Coding": "qwen/qwen2.5-coder-32b-instruct:free",
-            "🔬 Latest": "google/gemini-2.5-flash:free",
-            "💰 Ultra-Cheap": "mistralai/ministral-3b"
+            "🧠 Reasoning": "deepseek/deepseek-r1-distill-llama-70b:free",
+            "🔬 Thinking": "google/gemini-2.0-flash-thinking-exp:free", 
+            "💰 Ultra-Cheap": "deepseek/deepseek-r1-distill-llama-8b",
+            "⚡ Small": "mistralai/mistral-7b-instruct",
+            "🏆 Best Free": "deepseek/deepseek-r1-distill-llama-70b:free",
+            "💻 Latest": "deepseek/deepseek-r1-0528"
         }
         
         cols = st.columns(2)

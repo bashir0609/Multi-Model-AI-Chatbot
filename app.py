@@ -98,6 +98,24 @@ MODEL_OPTIONS = {
     "tngtech/deepseek-r1t-chimera:free": "TNG DeepSeek R1T Chimera (FREE)",
 }
 
+# ---- API KEY VALIDATION ----
+def validate_api_key(key):
+    """Validate the API key format and basic structure"""
+    if not key:
+        return False, "API key is empty or None"
+    
+    # Remove any whitespace
+    key = key.strip()
+    
+    # Basic validation - OpenRouter keys typically start with "sk-or-"
+    if not key.startswith(('sk-or-', 'sk-')):
+        return False, "API key doesn't appear to be a valid OpenRouter key format"
+    
+    if len(key) < 20:
+        return False, "API key appears to be too short"
+    
+    return True, "API key format looks valid"
+
 # ---- STREAMLIT UI ----
 st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide")
 
@@ -138,11 +156,74 @@ st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
 # ---- SIDEBAR ----
 with st.sidebar:
     st.header("🔐 API Access")
+    
+    # Enhanced API key validation
     if api_key:
-        st.success("API key loaded from environment.")
+        api_key = api_key.strip()  # Clean the key
+        is_valid, message = validate_api_key(api_key)
+        
+        if is_valid:
+            # Show partial key for verification
+            masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "sk-..."
+            st.success(f"✅ API key loaded: `{masked_key}`")
+        else:
+            st.error(f"❌ API key issue: {message}")
+            st.info("💡 Get your API key from: https://openrouter.ai/keys")
+            
+            # Option to manually input API key
+            manual_key = st.text_input(
+                "Enter API key manually:",
+                type="password",
+                help="Paste your OpenRouter API key here"
+            )
+            if manual_key:
+                api_key = manual_key.strip()
+                is_valid, message = validate_api_key(api_key)
+                if is_valid:
+                    st.success("✅ Manual API key validated!")
+                else:
+                    st.error(f"❌ {message}")
+                    st.stop()
+            else:
+                st.stop()
     else:
-        st.error("No API key found. Please add OPENROUTER_API_KEY to your .env file.")
-        st.stop()
+        st.error("❌ No OPENROUTER_API_KEY found in environment.")
+        st.info("💡 Add your API key to a .env file or enter it below:")
+        
+        # Option to manually input API key
+        manual_key = st.text_input(
+            "Enter API key:",
+            type="password",
+            help="Get your key from https://openrouter.ai/keys"
+        )
+        if manual_key:
+            api_key = manual_key.strip()
+            is_valid, message = validate_api_key(api_key)
+            if is_valid:
+                st.success("✅ API key validated!")
+            else:
+                st.error(f"❌ {message}")
+                st.stop()
+        else:
+            st.stop()
+
+    st.divider()
+    st.header("🔧 Connection Test")
+    if st.button("🧪 Test API Connection", help="Test if your API key works"):
+        with st.spinner("Testing connection..."):
+            test_response = call_model_api(
+                selected_models[0] if selected_models else "deepseek/deepseek-v3-base:free",
+                [{"role": "user", "content": "Hi"}],
+                api_key,
+                0.1,
+                10,
+                30
+            )
+            if test_response.startswith("🔐") or test_response.startswith("❌"):
+                st.error(f"Connection failed: {test_response}")
+            else:
+                st.success("✅ API connection successful!")
+                st.info(f"Test response: {test_response[:100]}...")
 
     st.divider()
     st.header("🤖 Model Selection")
@@ -224,6 +305,11 @@ if not selected_models:
     st.warning("Please select at least one model to continue.")
     st.stop()
 
+# Final API key check before proceeding
+if not api_key or not api_key.strip():
+    st.error("❌ No valid API key available. Please configure your API key in the sidebar.")
+    st.stop()
+
 # ---- SESSION STATE FOR CHAT ----
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = {}
@@ -241,6 +327,13 @@ for model in selected_models:
 def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout=60):
     """Enhanced API call with better error handling and logging"""
     url = "https://openrouter.ai/api/v1/chat/completions"
+    
+    # Clean and validate API key one more time
+    if not api_key or not api_key.strip():
+        return "❌ API key is empty. Please check your configuration."
+    
+    api_key = api_key.strip()
+    
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -265,14 +358,37 @@ def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout
     try:
         response = requests.post(url, headers=headers, json=data, timeout=timeout)
         
-        if response.status_code == 429:
+        # Enhanced error handling with specific messages
+        if response.status_code == 401:
+            error_detail = ""
+            try:
+                error_json = response.json()
+                if 'error' in error_json:
+                    error_detail = f": {error_json['error'].get('message', 'Unknown auth error')}"
+            except:
+                pass
+            return f"🔐 Authentication failed{error_detail}. Please check your API key at https://openrouter.ai/keys"
+        
+        elif response.status_code == 429:
             return "⏳ Rate limit exceeded. Please wait a moment and try again."
         elif response.status_code == 402:
             return "💳 Insufficient credits. Please check your OpenRouter account."
         elif response.status_code == 400:
-            return "❌ Bad request. Please check your input."
+            try:
+                error_json = response.json()
+                error_msg = error_json.get('error', {}).get('message', 'Bad request')
+                return f"❌ Bad request: {error_msg}"
+            except:
+                return "❌ Bad request. Please check your input."
+        elif response.status_code == 404:
+            return f"❌ Model '{model_id}' not found. It may be unavailable or discontinued."
         elif response.status_code != 200:
-            return f"❌ HTTP {response.status_code}: {response.text}"
+            try:
+                error_json = response.json()
+                error_msg = error_json.get('error', {}).get('message', f'HTTP {response.status_code}')
+                return f"❌ {error_msg}"
+            except:
+                return f"❌ HTTP {response.status_code}: {response.text[:100]}"
         
         result = response.json()
         

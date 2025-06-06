@@ -8,6 +8,18 @@ from api_utils import validate_api_key, call_model_api, call_models_parallel
 def chat_interface():
     """Main chat interface function"""
     st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
+    
+    # Important instructions
+    st.warning("⚠️ **IMPORTANT**: Many free models change frequently. If you get 'model not found' errors:")
+    with st.expander("🔧 How to find working models", expanded=False):
+        st.markdown("""
+        1. **Go to [OpenRouter Models](https://openrouter.ai/models)** in another tab
+        2. **Use the filter** → Set "Prompt pricing" to "FREE" 
+        3. **Copy the exact model ID** (like `provider/model-name:free`)
+        4. **Add it manually** in the model selection below
+        5. **Test it** with the connection test button
+        """)
+    st.info("💡 **Tip**: The models below are conservative choices that *should* work, but you may need paid credits.")
 
     # Check for transferred models from browser
     if 'transfer_models' in st.session_state:
@@ -16,7 +28,7 @@ def chat_interface():
         default_models = st.session_state.transfer_models
         del st.session_state.transfer_models  # Clean up
     else:
-        default_models = ["google/gemini-2.0-flash-thinking-exp:free"]
+        default_models = ["meta-llama/llama-3.1-8b-instruct"]
 
     # Custom CSS for better styling
     st.markdown("""
@@ -149,7 +161,7 @@ def chat_interface():
                 if current_api_key:  # Check if we have a valid key
                     with st.spinner("Testing connection..."):
                         # Use a simple test model for the connection test
-                        test_model = "google/gemini-2.0-flash-thinking-exp:free"
+                        test_model = "meta-llama/llama-3.1-8b-instruct"
                         test_response = call_model_api(
                             test_model,
                             [{"role": "user", "content": "Hi"}],
@@ -200,12 +212,12 @@ def chat_interface():
         # Quick model selection buttons
         st.subheader("⚡ Quick Select")
         quick_models = {
-            "🧠 Reasoning": "deepseek/deepseek-r1-distill-llama-70b:free",
-            "🔬 Thinking": "google/gemini-2.0-flash-thinking-exp:free", 
-            "💰 Ultra-Cheap": "deepseek/deepseek-r1-distill-llama-8b",
-            "⚡ Small": "mistralai/mistral-7b-instruct",
-            "🏆 Best Free": "deepseek/deepseek-r1-distill-llama-70b:free",
-            "💻 Latest": "deepseek/deepseek-r1-0528"
+            "🦙 Llama Basic": "meta-llama/llama-3.1-8b-instruct",
+            "🌟 Mistral": "mistralai/mistral-7b-instruct", 
+            "🧠 DeepSeek": "deepseek/deepseek-chat",
+            "🆓 Try Free Llama": "meta-llama/llama-3.1-8b-instruct:free",
+            "🆓 Try Free Mistral": "mistralai/mistral-7b-instruct:free",
+            "💡 Check OpenRouter": "meta-llama/llama-3.1-8b-instruct"
         }
         
         cols = st.columns(2)

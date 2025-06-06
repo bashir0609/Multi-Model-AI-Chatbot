@@ -1,4 +1,4 @@
-# chat.py - Chat interface
+# chat.py - Chat interface with input at bottom
 
 import os
 import streamlit as st
@@ -313,65 +313,6 @@ def chat_interface():
         if model not in st.session_state.model_status:
             st.session_state.model_status[model] = "Ready"
 
-    # ---- MAIN CHAT INTERFACE ----
-    user_input = st.chat_input("Type your message and press Enter...")
-
-    if user_input:
-        # Add user message to all selected models
-        for model in selected_models:
-            st.session_state.chat_history[model].append({"role": "user", "content": user_input})
-        
-        # Show progress
-        progress_container = st.container()
-        with progress_container:
-            st.info("🤖 Getting responses from selected models...")
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-        
-        # Update status for all models
-        for model in selected_models:
-            st.session_state.model_status[model] = "Generating..."
-        
-        if len(selected_models) == 1:
-            # Single model - simple call
-            model = selected_models[0]
-            status_text.text(f"Calling {MODEL_OPTIONS[model]}...")
-            response = call_model_api(
-                model,
-                st.session_state.chat_history[model],
-                current_api_key,
-                temperature,
-                max_tokens,
-                timeout,
-                system_message
-            )
-            st.session_state.chat_history[model].append({"role": "assistant", "content": response})
-            st.session_state.model_status[model] = "Complete"
-            progress_bar.progress(1.0)
-        else:
-            # Multiple models - parallel calls
-            status_text.text("Calling multiple models in parallel...")
-            
-            # Get messages for parallel call (excluding the system message part)
-            messages_for_api = st.session_state.chat_history[selected_models[0]]
-            
-            results = call_models_parallel(
-                selected_models, messages_for_api, current_api_key, temperature, max_tokens, timeout, system_message
-            )
-            
-            # Add responses to chat history
-            for i, model in enumerate(selected_models):
-                st.session_state.chat_history[model].append({
-                    "role": "assistant", 
-                    "content": results[model]
-                })
-                st.session_state.model_status[model] = "Complete"
-                progress_bar.progress((i + 1) / len(selected_models))
-        
-        # Clear progress indicators
-        progress_container.empty()
-        st.rerun()
-
     # ---- DISPLAY CHAT BASED ON LAYOUT ----
     if layout_mode == "Tabs" and len(selected_models) > 1:
         # Tab layout for better readability with many models
@@ -445,6 +386,65 @@ def chat_interface():
                 if st.button(f"Clear", key=f"clear_col_{idx}", help=f"Clear {MODEL_OPTIONS[model]}"):
                     st.session_state.chat_history[model] = []
                     st.rerun()
+
+    # ---- CHAT INPUT AT THE BOTTOM ----
+    user_input = st.chat_input("Type your message and press Enter...")
+
+    if user_input:
+        # Add user message to all selected models
+        for model in selected_models:
+            st.session_state.chat_history[model].append({"role": "user", "content": user_input})
+        
+        # Show progress
+        progress_container = st.container()
+        with progress_container:
+            st.info("🤖 Getting responses from selected models...")
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+        
+        # Update status for all models
+        for model in selected_models:
+            st.session_state.model_status[model] = "Generating..."
+        
+        if len(selected_models) == 1:
+            # Single model - simple call
+            model = selected_models[0]
+            status_text.text(f"Calling {MODEL_OPTIONS[model]}...")
+            response = call_model_api(
+                model,
+                st.session_state.chat_history[model],
+                current_api_key,
+                temperature,
+                max_tokens,
+                timeout,
+                system_message
+            )
+            st.session_state.chat_history[model].append({"role": "assistant", "content": response})
+            st.session_state.model_status[model] = "Complete"
+            progress_bar.progress(1.0)
+        else:
+            # Multiple models - parallel calls
+            status_text.text("Calling multiple models in parallel...")
+            
+            # Get messages for parallel call (excluding the system message part)
+            messages_for_api = st.session_state.chat_history[selected_models[0]]
+            
+            results = call_models_parallel(
+                selected_models, messages_for_api, current_api_key, temperature, max_tokens, timeout, system_message
+            )
+            
+            # Add responses to chat history
+            for i, model in enumerate(selected_models):
+                st.session_state.chat_history[model].append({
+                    "role": "assistant", 
+                    "content": results[model]
+                })
+                st.session_state.model_status[model] = "Complete"
+                progress_bar.progress((i + 1) / len(selected_models))
+        
+        # Clear progress indicators
+        progress_container.empty()
+        st.rerun()
 
     # ---- FOOTER INFO ----
     if st.session_state.chat_history:

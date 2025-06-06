@@ -267,55 +267,89 @@ st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
 with st.sidebar:
     st.header("🔐 API Access")
     
-    # Enhanced API key validation
-    if api_key:
-        api_key = api_key.strip()  # Clean the key
-        is_valid, message = validate_api_key(api_key)
-        
-        if is_valid:
-            # Show partial key for verification
-            masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "sk-..."
-            st.success(f"✅ API key loaded: `{masked_key}`")
-        else:
-            st.error(f"❌ API key issue: {message}")
-            st.info("💡 Get your API key from: https://openrouter.ai/keys")
+    # Check if environment API key exists
+    env_api_key = api_key
+    
+    # API Key source selection
+    api_source = st.radio(
+        "Choose API Key Source:",
+        ["Environment Variable", "Manual Input"],
+        help="Select how you want to provide your OpenRouter API key"
+    )
+    
+    final_api_key = None
+    
+    if api_source == "Environment Variable":
+        if env_api_key:
+            env_api_key = env_api_key.strip()
+            is_valid, message = validate_api_key(env_api_key)
             
-            # Option to manually input API key
-            manual_key = st.text_input(
-                "Enter API key manually:",
-                type="password",
-                help="Paste your OpenRouter API key here"
-            )
-            if manual_key:
-                api_key = manual_key.strip()
-                is_valid, message = validate_api_key(api_key)
-                if is_valid:
-                    st.success("✅ Manual API key validated!")
-                else:
-                    st.error(f"❌ {message}")
-                    st.stop()
-            else:
-                st.stop()
-    else:
-        st.error("❌ No OPENROUTER_API_KEY found in environment.")
-        st.info("💡 Add your API key to a .env file or enter it below:")
-        
-        # Option to manually input API key
-        manual_key = st.text_input(
-            "Enter API key:",
-            type="password",
-            help="Get your key from https://openrouter.ai/keys"
-        )
-        if manual_key:
-            api_key = manual_key.strip()
-            is_valid, message = validate_api_key(api_key)
             if is_valid:
-                st.success("✅ API key validated!")
+                # Show partial key for verification
+                masked_key = env_api_key[:8] + "..." + env_api_key[-4:] if len(env_api_key) > 12 else "sk-..."
+                st.success(f"✅ Environment API key loaded: `{masked_key}`")
+                final_api_key = env_api_key
+                
+                # Option to view/edit the key
+                with st.expander("🔍 View/Edit Environment Key", expanded=False):
+                    edited_key = st.text_input(
+                        "Current environment key:",
+                        value=env_api_key,
+                        type="password",
+                        help="Edit if needed"
+                    )
+                    if edited_key != env_api_key:
+                        is_valid_edited, message_edited = validate_api_key(edited_key)
+                        if is_valid_edited:
+                            st.info("✅ Using edited key")
+                            final_api_key = edited_key
+                        else:
+                            st.error(f"❌ Edited key invalid: {message_edited}")
+            else:
+                st.error(f"❌ Environment API key issue: {message}")
+                st.info("💡 Switch to 'Manual Input' or fix your .env file")
+        else:
+            st.warning("⚠️ No OPENROUTER_API_KEY found in environment")
+            st.info("💡 Create a `.env` file with: `OPENROUTER_API_KEY=your-key-here`")
+            st.info("💡 Or switch to 'Manual Input' below")
+    
+    elif api_source == "Manual Input":
+        st.info("🔑 Enter your OpenRouter API key manually")
+        
+        manual_key = st.text_input(
+            "API Key:",
+            type="password",
+            help="Get your key from https://openrouter.ai/keys",
+            placeholder="sk-or-v1-..."
+        )
+        
+        if manual_key:
+            manual_key = manual_key.strip()
+            is_valid, message = validate_api_key(manual_key)
+            if is_valid:
+                masked_key = manual_key[:8] + "..." + manual_key[-4:] if len(manual_key) > 12 else "sk-..."
+                st.success(f"✅ Manual API key validated: `{masked_key}`")
+                final_api_key = manual_key
             else:
                 st.error(f"❌ {message}")
-                st.stop()
         else:
-            st.stop()
+            st.warning("⚠️ Please enter your API key above")
+    
+    # Final validation and assignment
+    if final_api_key:
+        api_key = final_api_key
+        
+        # Quick reference links
+        with st.expander("🔗 Quick Links", expanded=False):
+            st.markdown("""
+            - [Get API Key](https://openrouter.ai/keys) 🗝️
+            - [View Usage](https://openrouter.ai/usage) 📊  
+            - [Check Credits](https://openrouter.ai/credits) 💳
+            - [Documentation](https://openrouter.ai/docs) 📚
+            """)
+    else:
+        st.error("❌ No valid API key available")
+        st.stop()
 
     st.divider()
     st.header("🔧 Connection Test")

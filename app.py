@@ -1,13 +1,17 @@
 # app.py - Main application entry point
 
-import os
+# ⚠️ CRITICAL: Import streamlit first and set page config immediately
 import streamlit as st
+st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide", page_icon="🧠")
+
+# Now safe to import everything else
+import os
 from dotenv import load_dotenv
 
-# Load environment variables first
+# Load environment variables
 load_dotenv()
 
-# Import components (these imports need to be after load_dotenv)
+# Import components after page config is set
 try:
     from chat import chat_interface
     from browser import render_model_browser
@@ -17,47 +21,17 @@ except ImportError as e:
     st.stop()
 
 # ---- MAIN APP ----
-def main():
-    st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide", page_icon="🧠")
-
-    # Main navigation
-    tab1, tab2 = st.tabs(["💬 Chat", "🔍 Model Browser"])
-
-    try:
-        with tab1:
-            # Main chat interface
-            chat_interface()
-
-        with tab2:
-            # Model browser interface
-            render_model_browser()
-    except Exception as e:
-        st.error(f"Application error: {e}")
-        st.error("Please check the console for detailed error information.")
-
-if __name__ == "__main__":
-    main()# app.py - Main application entry point
-
-import streamlit as st
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Import components
-from chat import chat_interface
-from browser import render_model_browser
-
-# ---- MAIN APP ----
-st.set_page_config(page_title="Multi-Model AI Chatbot", layout="wide", page_icon="🧠")
-
 # Main navigation
 tab1, tab2 = st.tabs(["💬 Chat", "🔍 Model Browser"])
 
-with tab1:
-    # Main chat interface
-    chat_interface()
+try:
+    with tab1:
+        # Main chat interface
+        chat_interface()
 
-with tab2:
-    # Model browser interface
-    render_model_browser()
+    with tab2:
+        # Model browser interface
+        render_model_browser()
+except Exception as e:
+    st.error(f"Application error: {e}")
+    st.error("Please check the console for detailed error information.")

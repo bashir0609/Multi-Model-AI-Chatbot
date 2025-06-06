@@ -168,7 +168,11 @@ def call_model_api(model_id, messages, api_key, temperature, max_tokens):
         result = response.json()
         return result['choices'][0]['message']['content']
     except Exception as e:
-        return f"❌ Error: {e}"
+        # Show detailed error message from API if available
+        try:
+            return f"❌ Error: {response.json()}"
+        except:
+            return f"❌ Error: {e}"
 
 # ---- MAIN CHAT LOGIC ----
 if user_input:

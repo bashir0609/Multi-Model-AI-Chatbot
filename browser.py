@@ -1,4 +1,4 @@
-# browser.py - SIMPLE FIX - Replace the entire render_model_browser function
+# browser.py - Fixed Model Browser with guaranteed unique keys
 
 import streamlit as st
 
@@ -30,7 +30,7 @@ ULTRA_CHEAP_MODELS = {
 }
 
 def render_model_browser():
-    """Model browser - FIXED VERSION"""
+    """Model browser - FIXED VERSION with no duplicate keys"""
     st.title("🔍 Model Browser - Find Working Models")
     
     st.info("💡 **Browse and select models to use in chat. No API key required for browsing!**")
@@ -85,6 +85,18 @@ def render_model_browser():
             with col1:
                 st.write(f"**{display_name}**")
                 st.caption(f"`{model_id}`")
+                
+                # Add capability hints
+                if 'r1' in model_id.lower():
+                    st.caption("🧠 Advanced Reasoning")
+                elif 'coder' in model_id.lower():
+                    st.caption("💻 Code Specialist")
+                elif 'vision' in model_id.lower():
+                    st.caption("👁️ Vision/Image Understanding")
+                elif '1b' in model_id.lower():
+                    st.caption("⚡ Ultra Fast")
+                elif '70b' in model_id.lower() or '72b' in model_id.lower():
+                    st.caption("🦣 Large Scale")
             with col2:
                 st.success("FREE")
         
@@ -145,8 +157,17 @@ def render_model_browser():
             # Display selected models - NO REMOVE BUTTONS IN LOOPS
             for model_id in st.session_state.browser_selected_models:
                 display_name = CURRENT_FREE_MODELS.get(model_id) or ULTRA_CHEAP_MODELS.get(model_id) or model_id
-                st.write(f"**{display_name}**")
-                st.caption(f"`{model_id}`")
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    st.write(f"**{display_name}**")
+                    st.caption(f"`{model_id}`")
+                with col2:
+                    if ':free' in model_id:
+                        st.success("FREE")
+                    elif model_id in ULTRA_CHEAP_MODELS:
+                        st.info("Cheap")
+                    else:
+                        st.warning("Custom")
             
             # Single action section
             st.divider()
@@ -180,7 +201,7 @@ def render_model_browser():
                     key="model_to_remove_selector"
                 )
                 
-                if st.button("🗑️ Remove Selected", key="remove_selected_model"):
+                if st.button("🗑️ Remove Selected", key="remove_selected_model_btn"):
                     st.session_state.browser_selected_models.remove(model_to_remove)
                     st.rerun()
         

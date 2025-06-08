@@ -1,8 +1,8 @@
-# browser.py - Fixed Model Browser with guaranteed unique keys
+# browser.py - Fixed Model Browser (No API key required)
 
 import streamlit as st
 
-# Current working models based on recent OpenRouter data
+# Current working models
 CURRENT_FREE_MODELS = {
     "deepseek/deepseek-chat:free": "DeepSeek Chat (FREE)",
     "deepseek/deepseek-r1:free": "DeepSeek R1 Reasoning (FREE)",
@@ -16,7 +16,6 @@ CURRENT_FREE_MODELS = {
     "google/gemini-2.0-flash-experimental:free": "Gemini 2.0 Flash Experimental (FREE)",
     "google/gemini-pro:free": "Gemini Pro (FREE)",
     "mistralai/mistral-7b-instruct:free": "Mistral 7B Instruct (FREE)",
-    "mistralai/mistral-small-3.1:free": "Mistral Small 3.1 (FREE)",
     "qwen/qwen2.5-72b-instruct:free": "Qwen 2.5 72B Instruct (FREE)",
     "qwen/qwen2.5-coder-32b-instruct:free": "Qwen 2.5 Coder 32B (FREE)",
 }
@@ -30,13 +29,17 @@ ULTRA_CHEAP_MODELS = {
 }
 
 def render_model_browser():
-    """Model browser - FIXED VERSION with no duplicate keys"""
+    """Model browser - NO DUPLICATE KEYS"""
     st.title("🔍 Model Browser - Find Working Models")
     
     st.info("💡 **Browse and select models to use in chat. No API key required for browsing!**")
     st.warning("⚠️ **IMPORTANT**: Free model availability changes frequently. Always test models in the Chat tab!")
     
-    # Quick access links
+    # Model selection state
+    if 'browser_selected_models' not in st.session_state:
+        st.session_state.browser_selected_models = []
+    
+    # Quick access links (no buttons, just HTML)
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("""
@@ -56,97 +59,70 @@ def render_model_browser():
         </a>
         """, unsafe_allow_html=True)
     
-    # Model selection state
-    if 'browser_selected_models' not in st.session_state:
-        st.session_state.browser_selected_models = []
-    
     # Stats
-    total_free = len(CURRENT_FREE_MODELS)
-    total_cheap = len(ULTRA_CHEAP_MODELS)
-    
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("🆓 Free Models", total_free)
+        st.metric("🆓 Free Models", len(CURRENT_FREE_MODELS))
     with col2:
-        st.metric("💰 Ultra-Cheap", total_cheap)
+        st.metric("💰 Ultra-Cheap", len(ULTRA_CHEAP_MODELS))
     with col3:
         st.metric("📋 Selected", len(st.session_state.browser_selected_models))
     
-    # Simple tabs - NO LOOPS WITH BUTTONS
+    # Tabs
     tab1, tab2, tab3 = st.tabs(["🆓 Free Models", "💰 Ultra-Cheap", "📋 Selected"])
     
     with tab1:
         st.subheader("🆓 Free Models")
-        st.caption("Rate limits: 50/day (basic) or 1000/day (with $10+ credits)")
         
-        # Display models as simple list - NO BUTTONS IN LOOPS
+        # Just show the models - NO BUTTONS AT ALL
         for model_id, display_name in CURRENT_FREE_MODELS.items():
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.write(f"**{display_name}**")
-                st.caption(f"`{model_id}`")
-                
-                # Add capability hints
-                if 'r1' in model_id.lower():
-                    st.caption("🧠 Advanced Reasoning")
-                elif 'coder' in model_id.lower():
-                    st.caption("💻 Code Specialist")
-                elif 'vision' in model_id.lower():
-                    st.caption("👁️ Vision/Image Understanding")
-                elif '1b' in model_id.lower():
-                    st.caption("⚡ Ultra Fast")
-                elif '70b' in model_id.lower() or '72b' in model_id.lower():
-                    st.caption("🦣 Large Scale")
-            with col2:
-                st.success("FREE")
+            st.write(f"**{display_name}**")
+            st.caption(f"`{model_id}`")
+            st.success("FREE")
+            st.divider()
         
-        # Single add section at bottom
-        st.divider()
-        selected_free_model = st.selectbox(
-            "Select a free model to add:",
+        # Single selectbox to add models
+        st.subheader("Add a Free Model")
+        selected_free = st.selectbox(
+            "Choose a free model to add:",
             options=list(CURRENT_FREE_MODELS.keys()),
             format_func=lambda x: CURRENT_FREE_MODELS[x],
-            key="free_model_selector"
+            key="free_model_select"
         )
         
-        if st.button("➕ Add Selected Free Model", key="add_free_model_btn"):
-            if selected_free_model not in st.session_state.browser_selected_models:
-                st.session_state.browser_selected_models.append(selected_free_model)
+        # Single button to add
+        if st.button("➕ Add This Free Model", key="add_free_btn"):
+            if selected_free not in st.session_state.browser_selected_models:
+                st.session_state.browser_selected_models.append(selected_free)
                 st.success("Added!")
                 st.rerun()
-            else:
-                st.info("Already added!")
     
     with tab2:
         st.subheader("💰 Ultra-Cheap Models")
-        st.caption("Perfect for production use - no rate limits!")
         
-        # Display models as simple list - NO BUTTONS IN LOOPS
+        # Just show the models - NO BUTTONS AT ALL
         for model_id, display_name in ULTRA_CHEAP_MODELS.items():
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.write(f"**{display_name}**")
-                st.caption(f"`{model_id}`")
-            with col2:
-                price = display_name.split("($")[1].split(")")[0] if "($" in display_name else "Cheap"
-                st.info(price)
+            st.write(f"**{display_name}**")
+            st.caption(f"`{model_id}`")
+            price = display_name.split("($")[1].split(")")[0] if "($" in display_name else "Cheap"
+            st.info(price)
+            st.divider()
         
-        # Single add section at bottom
-        st.divider()
-        selected_cheap_model = st.selectbox(
-            "Select a cheap model to add:",
+        # Single selectbox to add models
+        st.subheader("Add a Cheap Model")
+        selected_cheap = st.selectbox(
+            "Choose a cheap model to add:",
             options=list(ULTRA_CHEAP_MODELS.keys()),
             format_func=lambda x: ULTRA_CHEAP_MODELS[x],
-            key="cheap_model_selector"
+            key="cheap_model_select"
         )
         
-        if st.button("➕ Add Selected Cheap Model", key="add_cheap_model_btn"):
-            if selected_cheap_model not in st.session_state.browser_selected_models:
-                st.session_state.browser_selected_models.append(selected_cheap_model)
+        # Single button to add
+        if st.button("➕ Add This Cheap Model", key="add_cheap_btn"):
+            if selected_cheap not in st.session_state.browser_selected_models:
+                st.session_state.browser_selected_models.append(selected_cheap)
                 st.success("Added!")
                 st.rerun()
-            else:
-                st.info("Already added!")
     
     with tab3:
         st.subheader("📋 Selected Models")
@@ -154,105 +130,82 @@ def render_model_browser():
         if st.session_state.browser_selected_models:
             st.success(f"✅ You have {len(st.session_state.browser_selected_models)} models selected")
             
-            # Display selected models - NO REMOVE BUTTONS IN LOOPS
+            # Show selected models - NO REMOVE BUTTONS
             for model_id in st.session_state.browser_selected_models:
                 display_name = CURRENT_FREE_MODELS.get(model_id) or ULTRA_CHEAP_MODELS.get(model_id) or model_id
-                col1, col2 = st.columns([4, 1])
-                with col1:
-                    st.write(f"**{display_name}**")
-                    st.caption(f"`{model_id}`")
-                with col2:
-                    if ':free' in model_id:
-                        st.success("FREE")
-                    elif model_id in ULTRA_CHEAP_MODELS:
-                        st.info("Cheap")
-                    else:
-                        st.warning("Custom")
+                st.write(f"**{display_name}**")
+                st.caption(f"`{model_id}`")
+                if ':free' in model_id:
+                    st.success("FREE")
+                else:
+                    st.info("Paid")
+                st.divider()
             
-            # Single action section
-            st.divider()
+            # Action buttons
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("🚀 Send to Chat", type="primary", use_container_width=True, key="send_selected_to_chat"):
+                if st.button("🚀 Send First Model to Chat", key="send_to_chat_btn"):
                     if st.session_state.browser_selected_models:
                         st.session_state.transfer_models = [st.session_state.browser_selected_models[0]]
                         st.balloons()
-                        st.success(f"✅ Sent to Chat: {st.session_state.browser_selected_models[0]}")
-                        st.info("💡 Go to Chat tab to use the model!")
+                        st.success(f"✅ Sent: {st.session_state.browser_selected_models[0]}")
             
             with col2:
-                if st.button("📋 Copy IDs", use_container_width=True, key="copy_selected_ids"):
+                if st.button("📋 Show All IDs", key="show_ids_btn"):
                     model_list = "\n".join(st.session_state.browser_selected_models)
-                    st.text_area("📋 Copy these model IDs:", model_list, height=100, key="model_ids_display")
+                    st.text_area("Model IDs:", model_list, height=100, key="ids_display")
             
             with col3:
-                if st.button("🗑️ Clear All", use_container_width=True, key="clear_all_selected"):
+                if st.button("🗑️ Clear All Selected", key="clear_all_btn"):
                     st.session_state.browser_selected_models = []
+                    st.success("Cleared!")
                     st.rerun()
             
-            # Remove individual models section
+            # Remove individual model
             if len(st.session_state.browser_selected_models) > 1:
-                st.divider()
-                model_to_remove = st.selectbox(
-                    "Remove a specific model:",
+                st.subheader("Remove Individual Model")
+                to_remove = st.selectbox(
+                    "Select model to remove:",
                     options=st.session_state.browser_selected_models,
-                    format_func=lambda x: CURRENT_FREE_MODELS.get(x) or ULTRA_CHEAP_MODELS.get(x) or x,
-                    key="model_to_remove_selector"
+                    key="remove_select"
                 )
-                
-                if st.button("🗑️ Remove Selected", key="remove_selected_model_btn"):
-                    st.session_state.browser_selected_models.remove(model_to_remove)
+                if st.button("🗑️ Remove Selected Model", key="remove_btn"):
+                    st.session_state.browser_selected_models.remove(to_remove)
+                    st.success("Removed!")
                     st.rerun()
-        
         else:
-            st.info("👆 No models selected yet. Browse the tabs above to add models!")
+            st.info("No models selected yet. Use the tabs above to add models.")
     
-    # Manual model input section
+    # Manual input
     st.divider()
-    st.subheader("➕ Add Any Model")
+    st.subheader("➕ Add Any Model Manually")
     
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        custom_model = st.text_input(
-            "Enter any OpenRouter model ID:",
-            placeholder="e.g., anthropic/claude-3-sonnet, openai/gpt-4",
-            help="You can add any model from OpenRouter, not just the ones listed above",
-            key="custom_model_input_field"
-        )
+    custom_model = st.text_input(
+        "Enter model ID:",
+        placeholder="e.g., anthropic/claude-3-sonnet",
+        key="custom_input"
+    )
     
-    with col2:
-        st.write("")
-        st.write("")
-        if st.button("➕ Add", use_container_width=True, type="secondary", key="add_custom_model_button"):
-            if custom_model and custom_model.strip():
-                model_id = custom_model.strip()
-                if model_id not in st.session_state.browser_selected_models:
-                    st.session_state.browser_selected_models.append(model_id)
-                    st.success(f"✅ Added: {model_id}")
-                    st.rerun()
-                else:
-                    st.info("Already in list!")
+    if st.button("➕ Add Custom Model", key="add_custom_btn"):
+        if custom_model and custom_model.strip():
+            model_id = custom_model.strip()
+            if model_id not in st.session_state.browser_selected_models:
+                st.session_state.browser_selected_models.append(model_id)
+                st.success(f"Added: {model_id}")
+                st.rerun()
             else:
-                st.error("Please enter a model ID")
+                st.info("Already added!")
+        else:
+            st.error("Please enter a model ID")
     
     # Instructions
     st.divider()
-    with st.expander("📖 How to Use", expanded=False):
+    with st.expander("📖 How to Use"):
         st.markdown("""
-        **Step 1**: Browse free models or ultra-cheap options above
-        
-        **Step 2**: Select a model and click "Add" to add it to your list
-        
-        **Step 3**: Click "🚀 Send to Chat" to transfer a model to the Chat tab
-        
-        **Step 4**: Go to Chat tab and start using the model!
-        
-        **💡 Tips:**
-        - Free models have daily limits (50 or 1000 requests)
-        - Ultra-cheap models cost ~$0.02-0.07 per 1000 words
-        - Always test models in Chat before using extensively
-        - Check OpenRouter live for latest model availability
+        1. Browse models in the tabs above
+        2. Select models and click "Add" 
+        3. Go to "Selected" tab to manage your list
+        4. Click "Send to Chat" to use a model
+        5. Switch to Chat tab to start chatting
         """)
-    
-    st.caption("🔄 Model availability updated June 2025. Always verify current models on OpenRouter.")

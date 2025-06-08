@@ -1,9 +1,54 @@
-# chat.py - Single model chat interface
+# chat.py - Single model chat interface with persistent API key caching
 
 import os
 import streamlit as st
 from models import MODEL_OPTIONS, get_cost_info
 from api_utils import validate_api_key, call_model_api
+
+# Import persistent cache
+try:
+    from persistent_cache import get_api_cache
+    CACHE_AVAILABLE = True
+except ImportError:
+    CACHE_AVAILABLE = False
+    st.warning("⚠️ Persistent caching not available. Install 'cryptography' for API key persistence across restarts.")
+
+def load_cached_api_key():
+    """Load API key from persistent cache"""
+    if not CACHE_AVAILABLE:
+        return None
+    
+    try:
+        cache = get_api_cache()
+        cached_data = cache.load_api_key()
+        return cached_data
+    except Exception as e:
+        st.error(f"Error loading cached API key: {e}")
+        return None
+
+def save_api_key_to_cache(api_key, source="manual"):
+    """Save API key to persistent cache"""
+    if not CACHE_AVAILABLE:
+        return False
+    
+    try:
+        cache = get_api_cache()
+        return cache.save_api_key(api_key, source)
+    except Exception as e:
+        st.error(f"Error saving API key: {e}")
+        return False
+
+def clear_api_key_cache():
+    """Clear persistent API key cache"""
+    if not CACHE_AVAILABLE:
+        return False
+    
+    try:
+        cache = get_api_cache()
+        return cache.clear_cache()
+    except Exception as e:
+        st.error(f"Error clearing cache: {e}")
+        return False
 
 def chat_interface():
     """Main chat interface function - single model only"""
@@ -59,8 +104,13 @@ def chat_interface():
         # Initialize API key session state
         if 'cached_api_key' not in st.session_state:
             st.session_state.cached_api_key = None
-        if 'api_key_source' not in st.session_state:
-            st.session_state.api_key_source = "Environment Variable"
+        
+        # Try to load from persistent cache on first run
+        if st.session_state.cached_api_key is None and CACHE_AVAILABLE:
+            cached_data = load_cached_api_key()
+            if cached_data and cached_data.get('key'):
+                st.session_state.cached_api_key = cached_data['key']
+                st.session_state.api_key_source = cached_data.get('source', 'cached')
         
         # Check if we have a cached API key
         if st.session_state.cached_api_key:
@@ -68,16 +118,43 @@ def chat_interface():
             masked_key = st.session_state.cached_api_key[:8] + "..." + st.session_state.cached_api_key[-4:] if len(st.session_state.cached_api_key) > 12 else "sk-..."
             st.success(f"✅ API Key Active: `{masked_key}`")
             
+            # Show cache status
+            if CACHE_AVAILABLE:
+                cache = get_api_cache()
+                if cache.is_cached():
+                    st.caption("🔒 Persistently cached - survives app restarts")
+                else:
+                    st.caption("⚠️ Session only - will be lost on restart")
+            else:
+                st.caption("⚠️ Session only - install 'cryptography' for persistence")
+            
             # Cache control buttons
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                if st.button("🗑️ Clear Cache", help="Clear stored API key", use_container_width=True):
-                    st.session_state.cached_api_key = None
-                    st.success("✅ API key cache cleared!")
-                    st.rerun()
+                if st.button("💾 Save", help="Save to persistent cache", use_container_width=True):
+                    if CACHE_AVAILABLE:
+                        if save_api_key_to_cache(st.session_state.cached_api_key, "manual"):
+                            st.success("✅ Saved to persistent cache!")
+                        else:
+                            st.error("❌ Failed to save to cache")
+                    else:
+                        st.error("❌ Persistent cache not available")
             
             with col2:
-                if st.button("🔄 Change Key", help="Enter a different API key", use_container_width=True):
+                if st.button("🗑️ Clear", help="Clear API key completely", use_container_width=True):
+                    # Clear from both session and persistent cache
+                    st.session_state.cached_api_key = None
+                    if CACHE_AVAILABLE:
+                        if clear_api_key_cache():
+                            st.success("✅ Cleared completely!")
+                        else:
+                            st.warning("⚠️ Session cleared, cache clear failed")
+                    else:
+                        st.success("✅ Session cleared!")
+                    st.rerun()
+            
+            with col3:
+                if st.button("🔄 Change", help="Enter a different API key", use_container_width=True):
                     st.session_state.cached_api_key = None
                     st.rerun()
             
@@ -85,10 +162,15 @@ def chat_interface():
             
         else:
             # No cached key - show input options
+            st.info("🔑 No API key active. Please configure below:")
+            
             # Load API key from environment
             env_api_key = os.getenv("OPENROUTER_API_KEY")
             
             # API Key source selection
+            if 'api_key_source' not in st.session_state:
+                st.session_state.api_key_source = "Environment Variable"
+            
             api_source = st.radio(
                 "Choose API Key Source:",
                 ["Environment Variable", "Manual Input"],
@@ -97,7 +179,6 @@ def chat_interface():
             )
             
             st.session_state.api_key_source = api_source
-            final_api_key = None
             
             if api_source == "Environment Variable":
                 if env_api_key:
@@ -109,28 +190,57 @@ def chat_interface():
                         masked_key = env_api_key[:8] + "..." + env_api_key[-4:] if len(env_api_key) > 12 else "sk-..."
                         st.info(f"🔍 Environment key found: `{masked_key}`")
                         
-                        if st.button("✅ Use Environment Key", use_container_width=True):
-                            st.session_state.cached_api_key = env_api_key
-                            st.success("✅ Environment API key cached!")
-                            st.rerun()
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button("✅ Use & Save", help="Use and save to persistent cache", use_container_width=True):
+                                st.session_state.cached_api_key = env_api_key
+                                if CACHE_AVAILABLE:
+                                    if save_api_key_to_cache(env_api_key, "environment"):
+                                        st.success("✅ Environment key saved persistently!")
+                                    else:
+                                        st.warning("✅ Using environment key (save failed)")
+                                else:
+                                    st.success("✅ Using environment key!")
+                                st.rerun()
                         
-                        # Option to view/edit the key
+                        with col2:
+                            if st.button("✅ Use Only", help="Use without saving", use_container_width=True):
+                                st.session_state.cached_api_key = env_api_key
+                                st.success("✅ Environment API key loaded!")
+                                st.rerun()
+                        
+                        # Option to edit the environment key
                         with st.expander("🔍 Edit Environment Key", expanded=False):
                             edited_key = st.text_input(
                                 "Edit environment key:",
                                 value=env_api_key,
                                 type="password",
-                                help="Modify if needed"
+                                help="Modify if needed",
+                                key="edit_env_key"
                             )
-                            if st.button("Use Edited Key"):
-                                if edited_key.strip():
-                                    is_valid_edited, message_edited = validate_api_key(edited_key.strip())
-                                    if is_valid_edited:
-                                        st.session_state.cached_api_key = edited_key.strip()
-                                        st.success("✅ Edited API key cached!")
-                                        st.rerun()
-                                    else:
-                                        st.error(f"❌ Invalid: {message_edited}")
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.button("Use Edited & Save", key="use_edited_save"):
+                                    if edited_key.strip():
+                                        is_valid_edited, message_edited = validate_api_key(edited_key.strip())
+                                        if is_valid_edited:
+                                            st.session_state.cached_api_key = edited_key.strip()
+                                            if CACHE_AVAILABLE:
+                                                save_api_key_to_cache(edited_key.strip(), "edited_environment")
+                                            st.success("✅ Edited key saved!")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"❌ Invalid: {message_edited}")
+                            with col2:
+                                if st.button("Use Edited Only", key="use_edited_only"):
+                                    if edited_key.strip():
+                                        is_valid_edited, message_edited = validate_api_key(edited_key.strip())
+                                        if is_valid_edited:
+                                            st.session_state.cached_api_key = edited_key.strip()
+                                            st.success("✅ Edited key loaded!")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"❌ Invalid: {message_edited}")
                     else:
                         st.error(f"❌ Environment API key issue: {message}")
                         st.info("💡 Switch to 'Manual Input' or fix your .env file")
@@ -157,10 +267,25 @@ def chat_interface():
                         masked_key = manual_key[:8] + "..." + manual_key[-4:] if len(manual_key) > 12 else "sk-..."
                         st.info(f"✅ Key validated: `{masked_key}`")
                         
-                        if st.button("💾 Save & Use Key", use_container_width=True):
-                            st.session_state.cached_api_key = manual_key
-                            st.success("✅ API key cached!")
-                            st.rerun()
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button("💾 Save & Use", help="Save persistently and use", use_container_width=True):
+                                st.session_state.cached_api_key = manual_key
+                                if CACHE_AVAILABLE:
+                                    if save_api_key_to_cache(manual_key, "manual"):
+                                        st.success("✅ API key saved persistently!")
+                                        st.balloons()
+                                    else:
+                                        st.warning("✅ Using key (save failed)")
+                                else:
+                                    st.success("✅ API key cached for session!")
+                                st.rerun()
+                        
+                        with col2:
+                            if st.button("🔓 Use Only", help="Use without saving", use_container_width=True):
+                                st.session_state.cached_api_key = manual_key
+                                st.success("✅ API key loaded!")
+                                st.rerun()
                     else:
                         st.error(f"❌ {message}")
                 else:
@@ -168,6 +293,30 @@ def chat_interface():
             
             # No valid key available yet
             current_api_key = None
+        
+        # Show cache status and instructions
+        if CACHE_AVAILABLE:
+            cache = get_api_cache()
+            with st.expander("💾 Cache Info", expanded=False):
+                if cache.is_cached():
+                    st.success("✅ API key is persistently cached")
+                    st.caption("Your API key will survive app restarts!")
+                else:
+                    st.info("ℹ️ No persistent cache found")
+                    st.caption("Use 'Save & Use' to enable persistence")
+                
+                st.markdown("""
+                **Cache Features:**
+                - 🔒 Encrypted storage in your home directory
+                - 🔄 Survives app restarts and refreshes
+                - 🗑️ Easy to clear when needed
+                - 🛡️ Secure file permissions
+                """)
+        else:
+            with st.expander("⚠️ Install for Persistence", expanded=False):
+                st.warning("Persistent caching not available")
+                st.code("pip install cryptography")
+                st.caption("Install the above package to enable API key persistence across app restarts")
         
         # Show quick links if we have a key
         if current_api_key:

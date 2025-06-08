@@ -31,6 +31,20 @@ except Exception as general_error:
     CACHE_AVAILABLE = False
     print(f"❌ Cache system error: {general_error}")
 
+# Global key management for chat interface
+import time
+import random
+
+if 'chat_key_counter' not in st.session_state:
+    st.session_state.chat_key_counter = 0
+
+def get_unique_chat_key(prefix="chat_key"):
+    """Generate absolutely unique key for chat interface widgets"""
+    st.session_state.chat_key_counter += 1
+    timestamp = int(time.time() * 1000000)  # Microseconds
+    random_num = random.randint(100000, 999999)
+    return f"{prefix}_{st.session_state.chat_key_counter}_{timestamp}_{random_num}"
+
 def load_cached_api_key():
     """Load API key from persistent cache with detailed error handling and feedback"""
     if not CACHE_AVAILABLE:
@@ -112,7 +126,8 @@ def debug_cache_status():
                 st.json(info)
                 
                 # Add quick test button
-                if st.button("🧪 Test Cache", key="debug_test_cache"):
+                test_key = get_unique_chat_key("debug_test_cache")
+                if st.button("🧪 Test Cache", key=test_key):
                     test_key = "sk-test-debug-123"
                     
                     with st.spinner("Testing cache..."):
@@ -242,7 +257,8 @@ def chat_interface():
             # Cache control buttons
             col1, col2, col3 = st.columns(3)
             with col1:
-                if st.button("💾 Save", help="Save to persistent cache", use_container_width=True):
+                save_key = get_unique_chat_key("save_cache")
+                if st.button("💾 Save", help="Save to persistent cache", use_container_width=True, key=save_key):
                     if CACHE_AVAILABLE:
                         if save_api_key_to_cache(st.session_state.cached_api_key, "manual"):
                             st.success("✅ Saved to persistent cache!")
@@ -252,7 +268,8 @@ def chat_interface():
                         st.error("❌ Persistent cache not available")
             
             with col2:
-                if st.button("🗑️ Clear", help="Clear API key completely", use_container_width=True):
+                clear_key = get_unique_chat_key("clear_cache")
+                if st.button("🗑️ Clear", help="Clear API key completely", use_container_width=True, key=clear_key):
                     # Store old key for confirmation
                     old_key = st.session_state.cached_api_key
                     
@@ -277,7 +294,8 @@ def chat_interface():
                     st.rerun()
             
             with col3:
-                if st.button("🔄 Change", help="Enter a different API key", use_container_width=True):
+                change_key = get_unique_chat_key("change_key")
+                if st.button("🔄 Change", help="Enter a different API key", use_container_width=True, key=change_key):
                     st.session_state.cached_api_key = None
                     st.rerun()
             
@@ -315,7 +333,8 @@ def chat_interface():
                         
                         col1, col2 = st.columns(2)
                         with col1:
-                            if st.button("✅ Use & Save", help="Use and save to persistent cache", use_container_width=True):
+                            use_save_key = get_unique_chat_key("use_save_env")
+                            if st.button("✅ Use & Save", help="Use and save to persistent cache", use_container_width=True, key=use_save_key):
                                 st.session_state.cached_api_key = env_api_key
                                 if CACHE_AVAILABLE:
                                     save_success = save_api_key_to_cache(env_api_key, "environment")
@@ -329,7 +348,8 @@ def chat_interface():
                                 st.rerun()
                         
                         with col2:
-                            if st.button("✅ Use Only", help="Use without saving", use_container_width=True):
+                            use_only_key = get_unique_chat_key("use_only_env")
+                            if st.button("✅ Use Only", help="Use without saving", use_container_width=True, key=use_only_key):
                                 st.session_state.cached_api_key = env_api_key
                                 st.success("✅ Environment API key loaded!")
                                 st.rerun()
@@ -345,7 +365,8 @@ def chat_interface():
                             )
                             col1, col2 = st.columns(2)
                             with col1:
-                                if st.button("Use Edited & Save", key="use_edited_save"):
+                                edit_save_key = get_unique_chat_key("use_edited_save")
+                                if st.button("Use Edited & Save", key=edit_save_key):
                                     if edited_key.strip():
                                         is_valid_edited, message_edited = validate_api_key(edited_key.strip())
                                         if is_valid_edited:
@@ -357,7 +378,8 @@ def chat_interface():
                                         else:
                                             st.error(f"❌ Invalid: {message_edited}")
                             with col2:
-                                if st.button("Use Edited Only", key="use_edited_only"):
+                                edit_only_key = get_unique_chat_key("use_edited_only")
+                                if st.button("Use Edited Only", key=edit_only_key):
                                     if edited_key.strip():
                                         is_valid_edited, message_edited = validate_api_key(edited_key.strip())
                                         if is_valid_edited:
@@ -394,7 +416,8 @@ def chat_interface():
                         
                         col1, col2 = st.columns(2)
                         with col1:
-                            if st.button("💾 Save & Use", help="Save persistently and use", use_container_width=True):
+                            save_use_key = get_unique_chat_key("save_use_manual")
+                            if st.button("💾 Save & Use", help="Save persistently and use", use_container_width=True, key=save_use_key):
                                 st.session_state.cached_api_key = manual_key
                                 if CACHE_AVAILABLE:
                                     save_success = save_api_key_to_cache(manual_key, "manual")
@@ -408,7 +431,8 @@ def chat_interface():
                                 st.rerun()
                         
                         with col2:
-                            if st.button("🔓 Use Only", help="Use without saving", use_container_width=True):
+                            use_only_manual_key = get_unique_chat_key("use_only_manual")
+                            if st.button("🔓 Use Only", help="Use without saving", use_container_width=True, key=use_only_manual_key):
                                 st.session_state.cached_api_key = manual_key
                                 st.success("✅ API key loaded!")
                                 st.rerun()
@@ -465,7 +489,8 @@ def chat_interface():
         st.divider()
         st.header("🔧 Connection Test")
         
-        if st.button("🧪 Test API Connection", help="Test if your API key works", use_container_width=True):
+        test_conn_key = get_unique_chat_key("test_connection")
+        if st.button("🧪 Test API Connection", help="Test if your API key works", use_container_width=True, key=test_conn_key):
             with st.spinner("Testing connection..."):
                 # Use a simple test model for the connection test
                 test_model = "meta-llama/llama-3.1-8b-instruct"
@@ -541,7 +566,8 @@ def chat_interface():
         with col2:
             st.write("")  # Empty space for alignment
             st.write("")  # Empty space for alignment
-            add_button = st.button("➕ Add", use_container_width=True, type="primary")
+            add_model_key = get_unique_chat_key("add_custom_model")
+            add_button = st.button("➕ Add", use_container_width=True, type="primary", key=add_model_key)
         
         if add_button:
             if manual_model and manual_model.strip():
@@ -575,7 +601,8 @@ def chat_interface():
                         st.write(f"**{display_name}**")
                         st.caption(f"`{model_id}`")
                     with col2:
-                        if st.button("🗑️", key=f"remove_{hash(model_id)}", help=f"Remove {model_id}"):
+                        remove_key = get_unique_chat_key(f"remove_model_{hash(model_id)}")
+                        if st.button("🗑️", key=remove_key, help=f"Remove {model_id}"):
                             del st.session_state.custom_models[model_id]
                             if st.session_state.selected_model == model_id:
                                 # Switch to a default model if current was deleted
@@ -631,7 +658,8 @@ def chat_interface():
         }
         
         for name, model_id in quick_models.items():
-            if st.button(name, key=f"quick_{name}", use_container_width=True):
+            quick_key = get_unique_chat_key(f"quick_{name}")
+            if st.button(name, key=quick_key, use_container_width=True):
                 st.session_state.selected_model = model_id
                 st.rerun()
 
@@ -645,13 +673,15 @@ def chat_interface():
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button("🗑️ Clear Chat", help="Clear conversation history"):
+            clear_chat_key = get_unique_chat_key("clear_chat")
+            if st.button("🗑️ Clear Chat", help="Clear conversation history", key=clear_chat_key):
                 if 'chat_history' in st.session_state:
                     st.session_state.chat_history = []
                 st.rerun()
         
         with col2:
-            if st.button("🧹 Clear All", help="Clear chat + API key cache", type="secondary"):
+            clear_all_key = get_unique_chat_key("clear_all")
+            if st.button("🧹 Clear All", help="Clear chat + API key cache", type="secondary", key=clear_all_key):
                 # Clear everything
                 if 'chat_history' in st.session_state:
                     st.session_state.chat_history = []
@@ -661,7 +691,8 @@ def chat_interface():
                 st.rerun()
         
         with col3:
-            if st.button("📋 Export", help="Copy conversation to clipboard"):
+            export_key = get_unique_chat_key("export_chat")
+            if st.button("📋 Export", help="Copy conversation to clipboard", key=export_key):
                 if 'chat_history' in st.session_state and st.session_state.chat_history:
                     # Create export text
                     export_text = f"# AI Chat with {MODEL_OPTIONS.get(selected_model, selected_model)}\n\n"

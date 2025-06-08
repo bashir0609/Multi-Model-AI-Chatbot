@@ -210,16 +210,22 @@ def chat_interface():
         st.divider()
         st.header("🤖 Model Selection")
         
-        # Initialize selected model in session state
+        # Initialize session states
         if 'selected_model' not in st.session_state:
             st.session_state.selected_model = default_model
+        if 'custom_models' not in st.session_state:
+            st.session_state.custom_models = {}
+        
+        # Combine predefined and custom models
+        all_models = MODEL_OPTIONS.copy()
+        all_models.update(st.session_state.custom_models)
         
         # Single model selection
         selected_model = st.selectbox(
             "Choose a model:",
-            options=list(MODEL_OPTIONS.keys()),
-            format_func=lambda x: MODEL_OPTIONS[x],
-            index=list(MODEL_OPTIONS.keys()).index(st.session_state.selected_model) if st.session_state.selected_model in MODEL_OPTIONS else 0,
+            options=list(all_models.keys()),
+            format_func=lambda x: all_models[x],
+            index=list(all_models.keys()).index(st.session_state.selected_model) if st.session_state.selected_model in all_models else 0,
             help="Select one model to chat with.",
             key="model_selector"
         )
@@ -229,27 +235,74 @@ def chat_interface():
             st.session_state.selected_model = selected_model
 
         # Show model info
-        cost_info = get_cost_info(selected_model, MODEL_OPTIONS[selected_model])
-        if cost_info['type'] == 'free':
-            st.success(f"🆓 {cost_info['cost']}")
+        if selected_model in MODEL_OPTIONS:
+            cost_info = get_cost_info(selected_model, MODEL_OPTIONS[selected_model])
+            if cost_info['type'] == 'free':
+                st.success(f"🆓 {cost_info['cost']}")
+            else:
+                st.info(f"💰 {cost_info['cost']}")
         else:
-            st.info(f"💰 {cost_info['cost']}")
+            # Custom model
+            if ':free' in selected_model:
+                st.success("🆓 Custom FREE model")
+            else:
+                st.info("💰 Custom model (check OpenRouter for pricing)")
 
         # Manual model input
         st.subheader("➕ Add Custom Model")
-        manual_model = st.text_input(
-            "Model ID:",
-            placeholder="e.g., deepseek/deepseek-chat:free",
-            help="Enter a model ID from OpenRouter"
-        )
         
-        if st.button("Use Custom Model", use_container_width=True):
-            if manual_model.strip():
-                st.session_state.selected_model = manual_model.strip()
-                st.success(f"✅ Switched to: {manual_model}")
-                st.rerun()
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            manual_model = st.text_input(
+                "Model ID:",
+                placeholder="e.g., deepseek/deepseek-chat:free",
+                help="Enter a model ID from OpenRouter",
+                key="custom_model_input"
+            )
+        
+        with col2:
+            st.write("")  # Empty space for alignment
+            st.write("")  # Empty space for alignment
+            add_button = st.button("➕ Add", use_container_width=True, type="primary")
+        
+        if add_button:
+            if manual_model and manual_model.strip():
+                custom_id = manual_model.strip()
+                # Create a display name for the custom model
+                if custom_id not in all_models:
+                    # Try to create a nice display name
+                    if ':free' in custom_id:
+                        display_name = f"{custom_id.replace(':free', '')} (FREE - Custom)"
+                    else:
+                        display_name = f"{custom_id} (Custom)"
+                    
+                    # Add to custom models
+                    st.session_state.custom_models[custom_id] = display_name
+                    st.session_state.selected_model = custom_id
+                    st.success(f"✅ Added and selected: {custom_id}")
+                    st.rerun()
+                else:
+                    st.session_state.selected_model = custom_id
+                    st.info(f"✅ Switched to existing model: {custom_id}")
+                    st.rerun()
             else:
                 st.error("Please enter a model ID")
+        
+        # Show custom models if any
+        if st.session_state.custom_models:
+            with st.expander("🗂️ Your Custom Models", expanded=False):
+                for model_id, display_name in st.session_state.custom_models.items():
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.write(f"**{display_name}**")
+                        st.caption(f"`{model_id}`")
+                    with col2:
+                        if st.button("🗑️", key=f"remove_{hash(model_id)}", help=f"Remove {model_id}"):
+                            del st.session_state.custom_models[model_id]
+                            if st.session_state.selected_model == model_id:
+                                # Switch to a default model if current was deleted
+                                st.session_state.selected_model = "meta-llama/llama-3.1-8b-instruct"
+                            st.rerun()
 
         # Check OpenRouter button with direct links
         st.subheader("🔍 Find Working Models")

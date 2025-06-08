@@ -20,8 +20,50 @@ def validate_api_key(key):
     
     return True, "API key format looks valid"
 
+def get_model_identity(model_id):
+    """Get the proper identity for each model"""
+    model_identities = {
+        # DeepSeek models
+        "deepseek/deepseek-chat": "DeepSeek Chat",
+        "deepseek/deepseek-r1": "DeepSeek R1", 
+        "deepseek/deepseek-coder": "DeepSeek Coder",
+        
+        # Meta Llama models  
+        "meta-llama/llama-3.1-8b-instruct": "Llama 3.1 8B",
+        "meta-llama/llama-3.1-70b-instruct": "Llama 3.1 70B",
+        "meta-llama/llama-3.1-405b-instruct": "Llama 3.1 405B",
+        "meta-llama/llama-3.2-1b-instruct": "Llama 3.2 1B",
+        "meta-llama/llama-3.2-3b-instruct": "Llama 3.2 3B",
+        "meta-llama/llama-3.2-11b-vision-instruct": "Llama 3.2 11B Vision",
+        "meta-llama/llama-3.3-70b-instruct": "Llama 3.3 70B",
+        
+        # Mistral models
+        "mistralai/mistral-7b-instruct": "Mistral 7B",
+        "mistralai/mistral-medium": "Mistral Medium",
+        "mistralai/mistral-large": "Mistral Large",
+        
+        # Google models
+        "google/gemini-pro": "Google Gemini Pro",
+        "google/gemini-2.0-flash-experimental": "Google Gemini 2.0 Flash",
+        
+        # Qwen models
+        "qwen/qwen2.5-72b-instruct": "Qwen 2.5 72B",
+        "qwen/qwen2.5-coder-32b-instruct": "Qwen 2.5 Coder 32B",
+        
+        # OpenAI models
+        "gpt-3.5-turbo": "ChatGPT (GPT-3.5)",
+        "gpt-4": "GPT-4",
+        "gpt-4-turbo": "GPT-4 Turbo",
+    }
+    
+    # Handle free versions (remove :free suffix)
+    base_model = model_id.replace(':free', '')
+    
+    # Return specific identity or generic fallback
+    return model_identities.get(base_model) or model_identities.get(model_id) or f"AI Model ({model_id})"
+
 def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout=60, system_message=""):
-    """Enhanced API call with better error handling and logging"""
+    """Enhanced API call with model identity and better error handling"""
     url = "https://openrouter.ai/api/v1/chat/completions"
     
     # Clean and validate API key one more time
@@ -37,11 +79,19 @@ def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout
         "X-Title": "Multi-Model Chatbot"
     }
     
-    # Add system message if provided
+    # Get model identity
+    model_identity = get_model_identity(model_id)
+    
+    # Create enhanced system message with model identity
+    identity_message = f"You are {model_identity}. Always identify yourself as {model_identity} when asked about your identity, model, or what AI you are."
+    
     if system_message.strip():
-        messages_with_system = [{"role": "system", "content": system_message.strip()}] + messages
+        combined_system_message = f"{identity_message}\n\n{system_message.strip()}"
     else:
-        messages_with_system = messages
+        combined_system_message = identity_message
+    
+    # Add system message with model identity
+    messages_with_system = [{"role": "system", "content": combined_system_message}] + messages
     
     data = {
         "model": model_id,
@@ -96,7 +146,9 @@ def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout
         # Add usage info if available
         if 'usage' in result:
             usage = result['usage']
-            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')}*"
+            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')} | Model: {model_identity}*"
+        else:
+            content += f"\n\n*Model: {model_identity}*"
         
         return content
         

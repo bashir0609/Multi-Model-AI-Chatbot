@@ -5,65 +5,34 @@ import streamlit as st
 from models import MODEL_OPTIONS, get_cost_info
 from api_utils import validate_api_key, call_model_api
 
-# Import persistent cache with better error handling
+# Import persistent cache with comprehensive error handling
 try:
     from persistent_cache import get_api_cache
     CACHE_AVAILABLE = True
-    # Test cache initialization immediately
+    
+    # Test cache initialization immediately to catch issues early
     try:
         _test_cache = get_api_cache()
         cache_type = type(_test_cache).__name__
-        st.write(f"🔧 Cache system: {cache_type}")
+        print(f"✅ Cache system initialized: {cache_type}")
+        
+        # Quick functionality test
+        if hasattr(_test_cache, 'get_cache_info'):
+            cache_info = _test_cache.get_cache_info()
+            print(f"📊 Cache info: {cache_info.get('method', 'unknown')} method available")
     except Exception as cache_init_error:
-        st.error(f"⚠️ Cache initialization issue: {cache_init_error}")
-        CACHE_AVAILABLE = False
-except ImportError:
+        print(f"⚠️ Cache initialization warning: {cache_init_error}")
+        # Don't disable cache completely, just note the issue
+        
+except ImportError as import_error:
     CACHE_AVAILABLE = False
-    st.warning("⚠️ Persistent caching not available. Install 'cryptography' for API key persistence across restarts.")
-except Exception as e:
+    print(f"⚠️ Persistent caching not available: {import_error}")
+except Exception as general_error:
     CACHE_AVAILABLE = False
-    st.error(f"❌ Cache system error: {e}")
-
-# Replace the load_cached_api_key function (around lines 16-27) with this enhanced version:
+    print(f"❌ Cache system error: {general_error}")
 
 def load_cached_api_key():
-    """Load API key from persistent cache with enhanced error handling"""
-    if not CACHE_AVAILABLE:
-        st.sidebar.info("ℹ️ Cache not available")
-        return None
-    
-    try:
-        cache = get_api_cache()
-        cached_data = cache.load_api_key()
-        
-        if cached_data:
-            # Show cache status in sidebar
-            method = cached_data.get('method', 'unknown')
-            source = cached_data.get('source', 'unknown')
-            st.sidebar.success(f"✅ Cache loaded: {method} method, source: {source}")
-            
-            # Add cache info to sidebar
-            with st.sidebar.expander("🔍 Cache Details", expanded=False):
-                st.json({
-                    "method": method,
-                    "source": source,
-                    "timestamp": cached_data.get('timestamp'),
-                    "key_preview": cached_data['key'][:8] + "..." + cached_data['key'][-4:] if cached_data['key'] else "N/A"
-                })
-        else:
-            st.sidebar.info("ℹ️ No cached API key found")
-        
-        return cached_data
-    except Exception as e:
-        st.sidebar.error(f"❌ Cache load error: {e}")
-        # Show detailed error in expander
-        with st.sidebar.expander("🐛 Cache Error Details", expanded=False):
-            import traceback
-            st.code(traceback.format_exc())
-        return None
-
-def load_cached_api_key():
-    """Load API key from persistent cache"""
+    """Load API key from persistent cache with detailed error handling and feedback"""
     if not CACHE_AVAILABLE:
         return None
     
@@ -73,16 +42,19 @@ def load_cached_api_key():
         return cached_data
     except Exception as e:
         st.error(f"Error loading cached API key: {e}")
+        # Show detailed error in console for debugging
+        import traceback
+        print(f"Cache load error details: {traceback.format_exc()}")
         return None
 
 def save_api_key_to_cache(api_key, source="manual"):
     """Save API key to persistent cache with enhanced error handling"""
     if not CACHE_AVAILABLE:
-        st.sidebar.warning("⚠️ Cache not available for saving")
+        st.warning("⚠️ Persistent caching not available")
         return False
     
     if not api_key or not api_key.strip():
-        st.sidebar.error("❌ Cannot save empty API key")
+        st.error("❌ Cannot save empty API key")
         return False
     
     try:
@@ -90,28 +62,19 @@ def save_api_key_to_cache(api_key, source="manual"):
         result = cache.save_api_key(api_key.strip(), source)
         
         if result:
-            st.sidebar.success(f"✅ API key saved to cache (source: {source})")
-            
-            # Show cache info after save
-            info = cache.get_cache_info() if hasattr(cache, 'get_cache_info') else {}
-            if info:
-                with st.sidebar.expander("💾 Cache Status", expanded=False):
-                    st.json(info)
+            print(f"✅ API key saved to cache (source: {source})")
         else:
-            st.sidebar.error("❌ Failed to save API key to cache")
+            print(f"❌ Failed to save API key to cache")
         
         return result
     except Exception as e:
-        st.sidebar.error(f"❌ Cache save error: {e}")
-        with st.sidebar.expander("🐛 Save Error Details", expanded=False):
-            import traceback
-            st.code(traceback.format_exc())
+        st.error(f"Error saving API key: {e}")
+        print(f"Cache save error details: {e}")
         return False
 
 def clear_api_key_cache():
-    """Clear persistent API key cache with enhanced feedback"""
+    """Clear persistent API key cache with enhanced error handling"""
     if not CACHE_AVAILABLE:
-        st.sidebar.warning("⚠️ Cache not available")
         return False
     
     try:
@@ -119,61 +82,62 @@ def clear_api_key_cache():
         result = cache.clear_cache()
         
         if result:
-            st.sidebar.success("✅ Cache cleared successfully")
+            print("✅ Cache cleared successfully")
         else:
-            st.sidebar.warning("⚠️ Cache clear may have failed")
+            print("⚠️ Cache clear may have failed")
         
         return result
     except Exception as e:
-        st.sidebar.error(f"❌ Cache clear error: {e}")
-        with st.sidebar.expander("🐛 Clear Error Details", expanded=False):
-            import traceback
-            st.code(traceback.format_exc())
+        st.error(f"Error clearing cache: {e}")
+        print(f"Cache clear error details: {e}")
         return False
 
-def test_cache_functionality():
-    """Test cache functionality and show results"""
+def debug_cache_status():
+    """Debug function to show cache status in sidebar"""
     if not CACHE_AVAILABLE:
-        st.sidebar.error("❌ Cache not available for testing")
-        return False
+        st.sidebar.error("❌ Cache system not available")
+        st.sidebar.info("💡 Install 'cryptography': pip install cryptography")
+        return
     
     try:
         cache = get_api_cache()
-        test_key = "sk-test-key-12345"
+        cache_type = type(cache).__name__
         
-        # Test save
-        st.sidebar.info("🧪 Testing cache save...")
-        save_result = cache.save_api_key(test_key, "test")
-        
-        if not save_result:
-            st.sidebar.error("❌ Cache save test failed")
-            return False
-        
-        # Test load
-        st.sidebar.info("🧪 Testing cache load...")
-        load_result = cache.load_api_key()
-        
-        if not load_result or load_result.get('key') != test_key:
-            st.sidebar.error("❌ Cache load test failed")
-            return False
-        
-        # Test clear
-        st.sidebar.info("🧪 Testing cache clear...")
-        clear_result = cache.clear_cache()
-        
-        if clear_result:
-            st.sidebar.success("✅ All cache tests passed!")
-            return True
+        # Get cache info if available
+        if hasattr(cache, 'get_cache_info'):
+            info = cache.get_cache_info()
+            st.sidebar.success(f"✅ Cache active: {cache_type}")
+            
+            with st.sidebar.expander("🔍 Cache Details", expanded=False):
+                st.json(info)
+                
+                # Add quick test button
+                if st.button("🧪 Test Cache", key="debug_test_cache"):
+                    test_key = "sk-test-debug-123"
+                    
+                    with st.spinner("Testing cache..."):
+                        # Test save
+                        save_ok = cache.save_api_key(test_key, "debug")
+                        if save_ok:
+                            st.success("✅ Save test passed")
+                            
+                            # Test load
+                            load_result = cache.load_api_key()
+                            if load_result and load_result.get('key') == test_key:
+                                st.success("✅ Load test passed")
+                                
+                                # Clean up
+                                cache.clear_cache()
+                                st.success("✅ All tests passed!")
+                            else:
+                                st.error("❌ Load test failed")
+                        else:
+                            st.error("❌ Save test failed")
         else:
-            st.sidebar.warning("⚠️ Cache clear test failed")
-            return False
+            st.sidebar.warning(f"⚠️ Basic cache: {cache_type}")
             
     except Exception as e:
-        st.sidebar.error(f"❌ Cache test error: {e}")
-        with st.sidebar.expander("🐛 Test Error Details", expanded=False):
-            import traceback
-            st.code(traceback.format_exc())
-        return False
+        st.sidebar.error(f"❌ Cache debug error: {e}")
 
 def chat_interface():
     """Main chat interface function - single model only"""
@@ -226,16 +190,35 @@ def chat_interface():
     with st.sidebar:
         st.header("🔐 API Access")
         
-        # Initialize API key session state
+        # Add cache debug info at the top of sidebar
+        debug_cache_status()
+        st.divider()
+        
+        # Initialize API key session state with enhanced error handling
         if 'cached_api_key' not in st.session_state:
             st.session_state.cached_api_key = None
         
         # Try to load from persistent cache on first run
         if st.session_state.cached_api_key is None and CACHE_AVAILABLE:
-            cached_data = load_cached_api_key()
-            if cached_data and cached_data.get('key'):
-                st.session_state.cached_api_key = cached_data['key']
-                st.session_state.api_key_source = cached_data.get('source', 'cached')
+            try:
+                cached_data = load_cached_api_key()
+                if cached_data and cached_data.get('key'):
+                    st.session_state.cached_api_key = cached_data['key']
+                    st.session_state.api_key_source = cached_data.get('source', 'cached')
+                    
+                    # Show success with details
+                    method = cached_data.get('method', 'unknown')
+                    st.success(f"🎉 Loaded from cache ({method})")
+                    
+                    with st.expander("📋 Cache Details", expanded=False):
+                        st.json({
+                            "source": cached_data.get('source'),
+                            "method": method,
+                            "timestamp": cached_data.get('timestamp'),
+                            "key_preview": cached_data['key'][:8] + "..." + cached_data['key'][-4:]
+                        })
+            except Exception as e:
+                st.warning(f"⚠️ Cache load issue: {e}")
         
         # Check if we have a cached API key
         if st.session_state.cached_api_key:
@@ -245,11 +228,14 @@ def chat_interface():
             
             # Show cache status
             if CACHE_AVAILABLE:
-                cache = get_api_cache()
-                if cache.is_cached():
-                    st.caption("🔒 Persistently cached - survives app restarts")
-                else:
-                    st.caption("⚠️ Session only - will be lost on restart")
+                try:
+                    cache = get_api_cache()
+                    if cache.is_cached():
+                        st.caption("🔒 Persistently cached - survives app restarts")
+                    else:
+                        st.caption("⚠️ Session only - will be lost on restart")
+                except:
+                    st.caption("⚠️ Session only - cache status unknown")
             else:
                 st.caption("⚠️ Session only - install 'cryptography' for persistence")
             
@@ -267,15 +253,27 @@ def chat_interface():
             
             with col2:
                 if st.button("🗑️ Clear", help="Clear API key completely", use_container_width=True):
-                    # Clear from both session and persistent cache
+                    # Store old key for confirmation
+                    old_key = st.session_state.cached_api_key
+                    
+                    # Clear from session state
                     st.session_state.cached_api_key = None
+                    
+                    # Clear from persistent cache
                     if CACHE_AVAILABLE:
-                        if clear_api_key_cache():
+                        clear_success = clear_api_key_cache()
+                        if clear_success:
                             st.success("✅ Cleared completely!")
                         else:
-                            st.warning("⚠️ Session cleared, cache clear failed")
+                            st.warning("⚠️ Session cleared, cache clear uncertain")
                     else:
                         st.success("✅ Session cleared!")
+                    
+                    # Show what was cleared
+                    if old_key:
+                        masked = old_key[:8] + "..." + old_key[-4:] if len(old_key) > 12 else "***"
+                        st.info(f"🗑️ Cleared: {masked}")
+                    
                     st.rerun()
             
             with col3:
@@ -320,8 +318,10 @@ def chat_interface():
                             if st.button("✅ Use & Save", help="Use and save to persistent cache", use_container_width=True):
                                 st.session_state.cached_api_key = env_api_key
                                 if CACHE_AVAILABLE:
-                                    if save_api_key_to_cache(env_api_key, "environment"):
+                                    save_success = save_api_key_to_cache(env_api_key, "environment")
+                                    if save_success:
                                         st.success("✅ Environment key saved persistently!")
+                                        st.balloons()
                                     else:
                                         st.warning("✅ Using environment key (save failed)")
                                 else:
@@ -397,11 +397,12 @@ def chat_interface():
                             if st.button("💾 Save & Use", help="Save persistently and use", use_container_width=True):
                                 st.session_state.cached_api_key = manual_key
                                 if CACHE_AVAILABLE:
-                                    if save_api_key_to_cache(manual_key, "manual"):
+                                    save_success = save_api_key_to_cache(manual_key, "manual")
+                                    if save_success:
                                         st.success("✅ API key saved persistently!")
                                         st.balloons()
                                     else:
-                                        st.warning("✅ Using key (save failed)")
+                                        st.warning("✅ Using key (persistent save failed)")
                                 else:
                                     st.success("✅ API key cached for session!")
                                 st.rerun()
@@ -421,22 +422,25 @@ def chat_interface():
         
         # Show cache status and instructions
         if CACHE_AVAILABLE:
-            cache = get_api_cache()
-            with st.expander("💾 Cache Info", expanded=False):
-                if cache.is_cached():
-                    st.success("✅ API key is persistently cached")
-                    st.caption("Your API key will survive app restarts!")
-                else:
-                    st.info("ℹ️ No persistent cache found")
-                    st.caption("Use 'Save & Use' to enable persistence")
-                
-                st.markdown("""
-                **Cache Features:**
-                - 🔒 Encrypted storage in your home directory
-                - 🔄 Survives app restarts and refreshes
-                - 🗑️ Easy to clear when needed
-                - 🛡️ Secure file permissions
-                """)
+            try:
+                cache = get_api_cache()
+                with st.expander("💾 Cache Status", expanded=False):
+                    if cache.is_cached():
+                        st.success("✅ API key is persistently cached")
+                        st.caption("Your API key will survive app restarts!")
+                    else:
+                        st.info("ℹ️ No persistent cache found")
+                        st.caption("Use 'Save & Use' to enable persistence")
+                    
+                    st.markdown("""
+                    **Cache Features:**
+                    - 🔒 Encrypted storage in your home directory
+                    - 🔄 Survives app restarts and refreshes
+                    - 🗑️ Easy to clear when needed
+                    - 🛡️ Secure file permissions
+                    """)
+            except Exception as e:
+                st.error(f"Cache status error: {e}")
         else:
             with st.expander("⚠️ Install for Persistence", expanded=False):
                 st.warning("Persistent caching not available")

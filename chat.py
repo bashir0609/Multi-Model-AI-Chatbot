@@ -251,6 +251,44 @@ def chat_interface():
             else:
                 st.error("Please enter a model ID")
 
+        # Check OpenRouter button with direct links
+        st.subheader("🔍 Find Working Models")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
+            <a href="https://openrouter.ai/models" target="_blank">
+                <button style="
+                    background: linear-gradient(45deg, #667eea, #764ba2);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    width: 100%;
+                    font-weight: bold;
+                ">🔍 Check OpenRouter</button>
+            </a>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <a href="https://openrouter.ai/models?pricing=free" target="_blank">
+                <button style="
+                    background: linear-gradient(45deg, #28a745, #20c997);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    width: 100%;
+                    font-weight: bold;
+                ">🆓 Free Models</button>
+            </a>
+            """, unsafe_allow_html=True)
+        
+        st.caption("💡 Click above to open OpenRouter and find current working models")
+
         # Quick model selection buttons
         st.subheader("⚡ Quick Select")
         quick_models = {

@@ -48,6 +48,10 @@ def render_model_browser():
     # Warning about model availability
     st.warning("⚠️ **IMPORTANT**: Free model availability changes frequently. Always test models in the Chat tab!")
     
+    # Initialize button counter for unique keys
+    if 'button_counter' not in st.session_state:
+        st.session_state.button_counter = 0
+    
     # Quick access links
     col1, col2 = st.columns(2)
     with col1:
@@ -101,7 +105,7 @@ def render_model_browser():
         
         for provider, models in providers.items():
             with st.expander(f"🏢 {provider.title()} ({len(models)} models)", expanded=provider=='deepseek'):
-                for model_id, display_name in models:
+                for idx, (model_id, display_name) in enumerate(models):
                     col1, col2, col3 = st.columns([4, 1, 1])
                     
                     with col1:
@@ -124,8 +128,10 @@ def render_model_browser():
                         st.success("FREE")
                     
                     with col3:
-                        # Create unique key using model_id directly
-                        unique_key = f"free_add_{model_id.replace('/', '_').replace(':', '_')}"
+                        # Create unique key using counter
+                        st.session_state.button_counter += 1
+                        unique_key = f"free_add_{st.session_state.button_counter}_{provider}_{idx}"
+                        
                         if st.button("➕", key=unique_key, help=f"Add {model_id}"):
                             if model_id not in st.session_state.browser_selected_models:
                                 st.session_state.browser_selected_models.append(model_id)
@@ -138,7 +144,7 @@ def render_model_browser():
         st.subheader("💰 Ultra-Cheap Models (Under $0.10/1M tokens)")
         st.caption("Perfect for production use - no rate limits!")
         
-        for model_id, display_name in ULTRA_CHEAP_MODELS.items():
+        for idx, (model_id, display_name) in enumerate(ULTRA_CHEAP_MODELS.items()):
             col1, col2, col3 = st.columns([4, 1, 1])
             
             with col1:
@@ -151,8 +157,10 @@ def render_model_browser():
                 st.info(price)
             
             with col3:
-                # Create unique key using model_id directly
-                unique_key = f"cheap_add_{model_id.replace('/', '_').replace(':', '_')}"
+                # Create unique key using counter
+                st.session_state.button_counter += 1
+                unique_key = f"cheap_add_{st.session_state.button_counter}_{idx}"
+                
                 if st.button("➕", key=unique_key, help=f"Add {model_id}"):
                     if model_id not in st.session_state.browser_selected_models:
                         st.session_state.browser_selected_models.append(model_id)
@@ -185,8 +193,10 @@ def render_model_browser():
                         st.warning("Custom")
                 
                 with col3:
-                    # Create unique remove key
-                    unique_remove_key = f"remove_{model_id.replace('/', '_').replace(':', '_')}"
+                    # Create unique remove key using counter
+                    st.session_state.button_counter += 1
+                    unique_remove_key = f"remove_{st.session_state.button_counter}_{i}"
+                    
                     if st.button("🗑️", key=unique_remove_key, help=f"Remove {model_id}"):
                         st.session_state.browser_selected_models.remove(model_id)
                         st.rerun()
@@ -195,7 +205,8 @@ def render_model_browser():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("🚀 Send to Chat", type="primary", use_container_width=True, key="send_to_chat_btn"):
+                st.session_state.button_counter += 1
+                if st.button("🚀 Send to Chat", type="primary", use_container_width=True, key=f"send_to_chat_btn_{st.session_state.button_counter}"):
                     # Transfer the first selected model to chat
                     if st.session_state.browser_selected_models:
                         st.session_state.transfer_models = [st.session_state.browser_selected_models[0]]
@@ -204,12 +215,14 @@ def render_model_browser():
                         st.info("💡 Go to Chat tab to use the model!")
             
             with col2:
-                if st.button("📋 Copy IDs", use_container_width=True, key="copy_model_ids_btn"):
+                st.session_state.button_counter += 1
+                if st.button("📋 Copy IDs", use_container_width=True, key=f"copy_model_ids_btn_{st.session_state.button_counter}"):
                     model_list = "\n".join(st.session_state.browser_selected_models)
-                    st.text_area("📋 Copy these model IDs:", model_list, height=100, key="model_ids_textarea")
+                    st.text_area("📋 Copy these model IDs:", model_list, height=100, key=f"model_ids_textarea_{st.session_state.button_counter}")
             
             with col3:
-                if st.button("🗑️ Clear All", use_container_width=True, key="clear_all_models_btn"):
+                st.session_state.button_counter += 1
+                if st.button("🗑️ Clear All", use_container_width=True, key=f"clear_all_models_btn_{st.session_state.button_counter}"):
                     st.session_state.browser_selected_models = []
                     st.rerun()
         
@@ -222,17 +235,19 @@ def render_model_browser():
     
     col1, col2 = st.columns([3, 1])
     with col1:
+        st.session_state.button_counter += 1
         custom_model = st.text_input(
             "Enter any OpenRouter model ID:",
             placeholder="e.g., anthropic/claude-3-sonnet, openai/gpt-4",
             help="You can add any model from OpenRouter, not just the ones listed above",
-            key="custom_model_input_field"
+            key=f"custom_model_input_field_{st.session_state.button_counter}"
         )
     
     with col2:
         st.write("")  # Spacing
         st.write("")  # Spacing
-        if st.button("➕ Add", use_container_width=True, type="secondary", key="add_custom_model_btn"):
+        st.session_state.button_counter += 1
+        if st.button("➕ Add", use_container_width=True, type="secondary", key=f"add_custom_model_btn_{st.session_state.button_counter}"):
             if custom_model and custom_model.strip():
                 model_id = custom_model.strip()
                 if model_id not in st.session_state.browser_selected_models:

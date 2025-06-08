@@ -5,13 +5,62 @@ import streamlit as st
 from models import MODEL_OPTIONS, get_cost_info
 from api_utils import validate_api_key, call_model_api
 
-# Import persistent cache
+# Import persistent cache with better error handling
 try:
     from persistent_cache import get_api_cache
     CACHE_AVAILABLE = True
+    # Test cache initialization immediately
+    try:
+        _test_cache = get_api_cache()
+        cache_type = type(_test_cache).__name__
+        st.write(f"🔧 Cache system: {cache_type}")
+    except Exception as cache_init_error:
+        st.error(f"⚠️ Cache initialization issue: {cache_init_error}")
+        CACHE_AVAILABLE = False
 except ImportError:
     CACHE_AVAILABLE = False
     st.warning("⚠️ Persistent caching not available. Install 'cryptography' for API key persistence across restarts.")
+except Exception as e:
+    CACHE_AVAILABLE = False
+    st.error(f"❌ Cache system error: {e}")
+
+# Replace the load_cached_api_key function (around lines 16-27) with this enhanced version:
+
+def load_cached_api_key():
+    """Load API key from persistent cache with enhanced error handling"""
+    if not CACHE_AVAILABLE:
+        st.sidebar.info("ℹ️ Cache not available")
+        return None
+    
+    try:
+        cache = get_api_cache()
+        cached_data = cache.load_api_key()
+        
+        if cached_data:
+            # Show cache status in sidebar
+            method = cached_data.get('method', 'unknown')
+            source = cached_data.get('source', 'unknown')
+            st.sidebar.success(f"✅ Cache loaded: {method} method, source: {source}")
+            
+            # Add cache info to sidebar
+            with st.sidebar.expander("🔍 Cache Details", expanded=False):
+                st.json({
+                    "method": method,
+                    "source": source,
+                    "timestamp": cached_data.get('timestamp'),
+                    "key_preview": cached_data['key'][:8] + "..." + cached_data['key'][-4:] if cached_data['key'] else "N/A"
+                })
+        else:
+            st.sidebar.info("ℹ️ No cached API key found")
+        
+        return cached_data
+    except Exception as e:
+        st.sidebar.error(f"❌ Cache load error: {e}")
+        # Show detailed error in expander
+        with st.sidebar.expander("🐛 Cache Error Details", expanded=False):
+            import traceback
+            st.code(traceback.format_exc())
+        return None
 
 def load_cached_api_key():
     """Load API key from persistent cache"""
@@ -27,27 +76,103 @@ def load_cached_api_key():
         return None
 
 def save_api_key_to_cache(api_key, source="manual"):
-    """Save API key to persistent cache"""
+    """Save API key to persistent cache with enhanced error handling"""
     if not CACHE_AVAILABLE:
+        st.sidebar.warning("⚠️ Cache not available for saving")
+        return False
+    
+    if not api_key or not api_key.strip():
+        st.sidebar.error("❌ Cannot save empty API key")
         return False
     
     try:
         cache = get_api_cache()
-        return cache.save_api_key(api_key, source)
+        result = cache.save_api_key(api_key.strip(), source)
+        
+        if result:
+            st.sidebar.success(f"✅ API key saved to cache (source: {source})")
+            
+            # Show cache info after save
+            info = cache.get_cache_info() if hasattr(cache, 'get_cache_info') else {}
+            if info:
+                with st.sidebar.expander("💾 Cache Status", expanded=False):
+                    st.json(info)
+        else:
+            st.sidebar.error("❌ Failed to save API key to cache")
+        
+        return result
     except Exception as e:
-        st.error(f"Error saving API key: {e}")
+        st.sidebar.error(f"❌ Cache save error: {e}")
+        with st.sidebar.expander("🐛 Save Error Details", expanded=False):
+            import traceback
+            st.code(traceback.format_exc())
         return False
 
 def clear_api_key_cache():
-    """Clear persistent API key cache"""
+    """Clear persistent API key cache with enhanced feedback"""
     if not CACHE_AVAILABLE:
+        st.sidebar.warning("⚠️ Cache not available")
         return False
     
     try:
         cache = get_api_cache()
-        return cache.clear_cache()
+        result = cache.clear_cache()
+        
+        if result:
+            st.sidebar.success("✅ Cache cleared successfully")
+        else:
+            st.sidebar.warning("⚠️ Cache clear may have failed")
+        
+        return result
     except Exception as e:
-        st.error(f"Error clearing cache: {e}")
+        st.sidebar.error(f"❌ Cache clear error: {e}")
+        with st.sidebar.expander("🐛 Clear Error Details", expanded=False):
+            import traceback
+            st.code(traceback.format_exc())
+        return False
+
+def test_cache_functionality():
+    """Test cache functionality and show results"""
+    if not CACHE_AVAILABLE:
+        st.sidebar.error("❌ Cache not available for testing")
+        return False
+    
+    try:
+        cache = get_api_cache()
+        test_key = "sk-test-key-12345"
+        
+        # Test save
+        st.sidebar.info("🧪 Testing cache save...")
+        save_result = cache.save_api_key(test_key, "test")
+        
+        if not save_result:
+            st.sidebar.error("❌ Cache save test failed")
+            return False
+        
+        # Test load
+        st.sidebar.info("🧪 Testing cache load...")
+        load_result = cache.load_api_key()
+        
+        if not load_result or load_result.get('key') != test_key:
+            st.sidebar.error("❌ Cache load test failed")
+            return False
+        
+        # Test clear
+        st.sidebar.info("🧪 Testing cache clear...")
+        clear_result = cache.clear_cache()
+        
+        if clear_result:
+            st.sidebar.success("✅ All cache tests passed!")
+            return True
+        else:
+            st.sidebar.warning("⚠️ Cache clear test failed")
+            return False
+            
+    except Exception as e:
+        st.sidebar.error(f"❌ Cache test error: {e}")
+        with st.sidebar.expander("🐛 Test Error Details", expanded=False):
+            import traceback
+            st.code(traceback.format_exc())
         return False
 
 def chat_interface():

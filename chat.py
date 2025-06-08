@@ -196,7 +196,7 @@ def chat_interface():
         if 'chat_selected_models' not in st.session_state:
             st.session_state.chat_selected_models = default_models
         
-        selected_models = st.multiselect(
+        selected_models = st.selectbox(
             "Choose one or more models to compare:",
             options=list(MODEL_OPTIONS.keys()),
             format_func=lambda x: MODEL_OPTIONS[x],

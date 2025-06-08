@@ -1,8 +1,9 @@
-# browser.py - Fixed Model Browser (No API key required)
+# browser.py - Fixed Model Browser with guaranteed unique keys
 
 import streamlit as st
 import time
-import uuid
+import hashlib
+import random
 
 # Current working models based on recent OpenRouter data
 CURRENT_FREE_MODELS = {
@@ -41,11 +42,16 @@ ULTRA_CHEAP_MODELS = {
     "qwen/qwen2.5-7b-instruct": "Qwen 2.5 7B ($0.07/1M)",
 }
 
-def generate_unique_key(base_name, additional_id=""):
-    """Generate a unique key for Streamlit elements"""
-    timestamp = str(int(time.time() * 1000000))  # Microsecond timestamp
-    unique_id = str(uuid.uuid4())[:8]  # Short UUID
-    return f"{base_name}_{additional_id}_{timestamp}_{unique_id}"
+# Global key management system
+if 'browser_key_counter' not in st.session_state:
+    st.session_state.browser_key_counter = 0
+
+def get_unique_key(prefix="key"):
+    """Generate absolutely unique key for Streamlit widgets"""
+    st.session_state.browser_key_counter += 1
+    timestamp = int(time.time() * 1000000)  # Microseconds
+    random_num = random.randint(100000, 999999)
+    return f"{prefix}_{st.session_state.browser_key_counter}_{timestamp}_{random_num}"
 
 def render_model_browser():
     """Model browser - No API key required"""
@@ -107,9 +113,9 @@ def render_model_browser():
                 providers[provider] = []
             providers[provider].append((model_id, display_name))
         
-        for provider_idx, (provider, models) in enumerate(providers.items()):
-            with st.expander(f"🏢 {provider.title()} ({len(models)} models)", expanded=provider=='deepseek'):
-                for model_idx, (model_id, display_name) in enumerate(models):
+        for provider in providers:
+            with st.expander(f"🏢 {provider.title()} ({len(providers[provider])} models)", expanded=provider=='deepseek'):
+                for model_id, display_name in providers[provider]:
                     col1, col2, col3 = st.columns([4, 1, 1])
                     
                     with col1:
@@ -133,7 +139,7 @@ def render_model_browser():
                     
                     with col3:
                         # Create unique key for each button
-                        unique_key = generate_unique_key("free_add", f"{provider_idx}_{model_idx}")
+                        unique_key = get_unique_key("free_add")
                         
                         if st.button("➕", key=unique_key, help=f"Add {model_id}"):
                             if model_id not in st.session_state.browser_selected_models:
@@ -147,7 +153,7 @@ def render_model_browser():
         st.subheader("💰 Ultra-Cheap Models (Under $0.10/1M tokens)")
         st.caption("Perfect for production use - no rate limits!")
         
-        for model_idx, (model_id, display_name) in enumerate(ULTRA_CHEAP_MODELS.items()):
+        for model_id, display_name in ULTRA_CHEAP_MODELS.items():
             col1, col2, col3 = st.columns([4, 1, 1])
             
             with col1:
@@ -161,7 +167,7 @@ def render_model_browser():
             
             with col3:
                 # Create unique key for each button
-                unique_key = generate_unique_key("cheap_add", str(model_idx))
+                unique_key = get_unique_key("cheap_add")
                 
                 if st.button("➕", key=unique_key, help=f"Add {model_id}"):
                     if model_id not in st.session_state.browser_selected_models:
@@ -196,7 +202,7 @@ def render_model_browser():
                 
                 with col3:
                     # Create unique remove key
-                    unique_remove_key = generate_unique_key("remove", str(i))
+                    unique_remove_key = get_unique_key("remove")
                     
                     if st.button("🗑️", key=unique_remove_key, help=f"Remove {model_id}"):
                         st.session_state.browser_selected_models.remove(model_id)
@@ -206,7 +212,7 @@ def render_model_browser():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                send_key = generate_unique_key("send_to_chat")
+                send_key = get_unique_key("send_to_chat")
                 if st.button("🚀 Send to Chat", type="primary", use_container_width=True, key=send_key):
                     # Transfer the first selected model to chat
                     if st.session_state.browser_selected_models:
@@ -216,15 +222,15 @@ def render_model_browser():
                         st.info("💡 Go to Chat tab to use the model!")
             
             with col2:
-                copy_key = generate_unique_key("copy_model_ids")
+                copy_key = get_unique_key("copy_model_ids")
                 if st.button("📋 Copy IDs", use_container_width=True, key=copy_key):
                     model_list = "\n".join(st.session_state.browser_selected_models)
                     # Create unique key for text area
-                    textarea_key = generate_unique_key("model_ids_textarea")
+                    textarea_key = get_unique_key("model_ids_textarea")
                     st.text_area("📋 Copy these model IDs:", model_list, height=100, key=textarea_key)
             
             with col3:
-                clear_key = generate_unique_key("clear_all_models")
+                clear_key = get_unique_key("clear_all_models")
                 if st.button("🗑️ Clear All", use_container_width=True, key=clear_key):
                     st.session_state.browser_selected_models = []
                     st.rerun()
@@ -238,7 +244,7 @@ def render_model_browser():
     
     col1, col2 = st.columns([3, 1])
     with col1:
-        custom_input_key = generate_unique_key("custom_model_input")
+        custom_input_key = get_unique_key("custom_model_input")
         custom_model = st.text_input(
             "Enter any OpenRouter model ID:",
             placeholder="e.g., anthropic/claude-3-sonnet, openai/gpt-4",
@@ -249,7 +255,7 @@ def render_model_browser():
     with col2:
         st.write("")  # Spacing
         st.write("")  # Spacing
-        add_custom_key = generate_unique_key("add_custom_model")
+        add_custom_key = get_unique_key("add_custom_model")
         if st.button("➕ Add", use_container_width=True, type="secondary", key=add_custom_key):
             if custom_model and custom_model.strip():
                 model_id = custom_model.strip()

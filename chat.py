@@ -1,4 +1,4 @@
-# chat.py - COMPLETE REPLACEMENT for dynamic model fetching
+# chat.py - Updated with Gemini-style Chat Input
 
 import os
 import streamlit as st
@@ -8,6 +8,43 @@ from api_utils import validate_api_key, call_model_api, get_available_models
 def chat_interface():
     """Main chat interface with a clear, dynamic model fetching workflow."""
     st.title("🧠 Multi-Model AI Chatbot (OpenRouter)")
+
+    # --- Custom CSS for Gemini-style Input Box ---
+    st.markdown("""
+    <style>
+    /* Main container for the chat input */
+    .stChatInputContainer {
+        padding: 1rem;
+        background-color: #f0f4f9; /* A light grey background */
+        border-radius: 2rem; /* Fully rounded corners */
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    /* The actual text input area */
+    .st-emotion-cache-134p1ai textarea {
+        background-color: transparent;
+        border: none;
+        font-size: 1rem;
+    }
+    
+    /* The send button */
+    .st-emotion-cache-15zrgzn {
+        background-color: #1a73e8; /* A nice blue color */
+        border-radius: 50%; /* Make it a circle */
+        color: white;
+    }
+    .st-emotion-cache-15zrgzn:hover {
+        background-color: #185abc; /* Darker blue on hover */
+        color: white;
+    }
+    
+    /* You may need to adjust these selectors if they change in future Streamlit versions */
+    /* To inspect elements, right-click on them in the browser and choose 'Inspect' */
+
+    </style>
+    """, unsafe_allow_html=True)
+
 
     # --- Initialize Session State ---
     # This ensures all necessary keys exist in the session
@@ -120,7 +157,7 @@ def chat_interface():
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Chat input box
+    # Chat input box - This will now be styled by the CSS above
     if user_input := st.chat_input("Type your message..."):
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         with st.chat_message("user"):

@@ -79,8 +79,19 @@ def chat_interface():
                 is_valid, message = validate_api_key(manual_key)
                 if is_valid:
                     st.session_state.api_key = manual_key.strip()
-                    st.success("API key saved!")
-                    st.rerun() # Rerun to update the UI
+                    st.success("API key saved! Fetching models...")
+                    
+                    # --- Automatically fetch models right after saving the key ---
+                    with st.spinner("Fetching available models..."):
+                        models, message = get_available_models(st.session_state.api_key)
+                        if models:
+                            st.session_state.available_models = models
+                            st.session_state.selected_model = next(iter(models.keys()), None)
+                            st.success(f"✅ Loaded {len(models)} models!")
+                            st.rerun()
+                        else:
+                            st.error(f"❌ {message}")
+                            st.rerun()
                 else:
                     st.error(f"❌ {message}")
             current_api_key = None

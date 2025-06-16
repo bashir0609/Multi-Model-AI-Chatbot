@@ -3,6 +3,32 @@
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
+def get_available_models(api_key):
+    """Fetch available models from the OpenRouter API."""
+    if not api_key:
+        return None, "API key is not set."
+
+    url = "https://openrouter.ai/api/v1/models"
+    headers = {
+        "Authorization": f"Bearer {api_key.strip()}"
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        models_data = response.json().get('data', [])
+        
+        # Transform the data into a dictionary of {model_id: display_name}
+        models_dict = {model['id']: model.get('name', model['id']) for model in models_data}
+        return models_dict, "Successfully fetched models."
+
+    except requests.exceptions.HTTPError as http_err:
+        return None, f"HTTP error occurred: {http_err}"
+    except requests.exceptions.RequestException as e:
+        return None, f"An error occurred while fetching models: {e}"
+    except Exception as e:
+        return None, f"An unexpected error occurred: {e}"
+
 def validate_api_key(key):
     """Validate the API key format and basic structure"""
     if not key:
@@ -22,45 +48,10 @@ def validate_api_key(key):
 
 def get_model_identity(model_id):
     """Get the proper identity for each model"""
-    model_identities = {
-        # DeepSeek models
-        "deepseek/deepseek-chat": "DeepSeek Chat",
-        "deepseek/deepseek-r1": "DeepSeek R1", 
-        "deepseek/deepseek-coder": "DeepSeek Coder",
-        
-        # Meta Llama models  
-        "meta-llama/llama-3.1-8b-instruct": "Llama 3.1 8B",
-        "meta-llama/llama-3.1-70b-instruct": "Llama 3.1 70B",
-        "meta-llama/llama-3.1-405b-instruct": "Llama 3.1 405B",
-        "meta-llama/llama-3.2-1b-instruct": "Llama 3.2 1B",
-        "meta-llama/llama-3.2-3b-instruct": "Llama 3.2 3B",
-        "meta-llama/llama-3.2-11b-vision-instruct": "Llama 3.2 11B Vision",
-        "meta-llama/llama-3.3-70b-instruct": "Llama 3.3 70B",
-        
-        # Mistral models
-        "mistralai/mistral-7b-instruct": "Mistral 7B",
-        "mistralai/mistral-medium": "Mistral Medium",
-        "mistralai/mistral-large": "Mistral Large",
-        
-        # Google models
-        "google/gemini-pro": "Google Gemini Pro",
-        "google/gemini-2.0-flash-experimental": "Google Gemini 2.0 Flash",
-        
-        # Qwen models
-        "qwen/qwen2.5-72b-instruct": "Qwen 2.5 72B",
-        "qwen/qwen2.5-coder-32b-instruct": "Qwen 2.5 Coder 32B",
-        
-        # OpenAI models
-        "gpt-3.5-turbo": "ChatGPT (GPT-3.5)",
-        "gpt-4": "GPT-4",
-        "gpt-4-turbo": "GPT-4 Turbo",
-    }
-    
-    # Handle free versions (remove :free suffix)
-    base_model = model_id.replace(':free', '')
-    
-    # Return specific identity or generic fallback
-    return model_identities.get(base_model) or model_identities.get(model_id) or f"AI Model ({model_id})"
+    # This function can now be simplified as the display name is fetched from the API
+    # However, you might want to keep it for custom or fallback names.
+    # For simplicity, we will just return the model_id as the identity for now.
+    return model_id
 
 def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout=60, system_message=""):
     """Enhanced API call with model identity and better error handling"""
@@ -79,19 +70,11 @@ def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout
         "X-Title": "Multi-Model Chatbot"
     }
     
-    # Get model identity
-    model_identity = get_model_identity(model_id)
-    
-    # Create enhanced system message with model identity
-    identity_message = f"You are {model_identity}. Always identify yourself as {model_identity} when asked about your identity, model, or what AI you are."
-    
+    # Create the system message
     if system_message.strip():
-        combined_system_message = f"{identity_message}\n\n{system_message.strip()}"
+        messages_with_system = [{"role": "system", "content": system_message.strip()}] + messages
     else:
-        combined_system_message = identity_message
-    
-    # Add system message with model identity
-    messages_with_system = [{"role": "system", "content": combined_system_message}] + messages
+        messages_with_system = messages
     
     data = {
         "model": model_id,
@@ -146,9 +129,9 @@ def call_model_api(model_id, messages, api_key, temperature, max_tokens, timeout
         # Add usage info if available
         if 'usage' in result:
             usage = result['usage']
-            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')} | Model: {model_identity}*"
+            content += f"\n\n*Tokens: {usage.get('total_tokens', 'N/A')} | Model: {model_id}*"
         else:
-            content += f"\n\n*Model: {model_identity}*"
+            content += f"\n\n*Model: {model_id}*"
         
         return content
         
